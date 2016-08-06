@@ -83,7 +83,22 @@ function figure1_KeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-
+if strcmp(get(handles.textInProcess,'Enable'),'on')
+    switch(eventdata.Key)
+        case 'uparrow'
+            step(handles.piAvatar,'Forward')
+        case 'downarrow'
+            step(handles.piAvatar,'Reverse')
+        case 'leftarrow'
+            step(handles.piAvatar,'Turn left')
+        case 'rightarrow'
+            step(handles.piAvatar,'Turn right')
+        case 'space'
+            step(handles.piAvatar,'Brake')
+        otherwise
+            step(handles.piAvatar,'Neutral')    
+    end
+end
 
 function editIpAddress_Callback(hObject, eventdata, handles)
 % hObject    handle to editIpAddress (see GCBO)
@@ -355,6 +370,9 @@ set(handles.textReady                     , 'Enable', 'on')
 set(handles.textInProcess                 , 'Enable', 'off')
 set(handles.popupmenuAvailableImageEffects, 'Enable', 'on')
 
+% Stop avatar
+step(handles.piAvatar,'Neutral')            
+            
 % Release piAvatar
 release(handles.piAvatar)
 

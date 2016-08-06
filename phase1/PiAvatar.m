@@ -58,7 +58,7 @@ classdef PiAvatar < matlab.System
                 reverse_(obj)
             elseif strcmp(command, 'Turn right')
                 turnRight_(obj)
-            elseif strcmp(command, 'Trun left')
+            elseif strcmp(command, 'Turn left')
                 turnLeft_(obj)
             elseif strcmp(command, 'Brake')
                 brake_(obj)
@@ -94,14 +94,14 @@ classdef PiAvatar < matlab.System
             writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 1);
         end
         
-        function trunRight_(obj)
+        function turnRight_(obj)
             writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 1);
             writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 0);
             writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 0);
             writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 1);
         end
         
-        function trunLeft_(obj)
+        function turnLeft_(obj)
             writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 0);
             writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 1);
             writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 1);
