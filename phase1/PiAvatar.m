@@ -4,15 +4,17 @@ classdef PiAvatar < matlab.System
     
     % Public, Tunable プロパティ
     properties
-        IpAddress    = ''
-        Id           = 'pi'
-        Password     = 'raspberry'
-        Motor1In1Pin = 19 % Explorer pHat
-        Motor1In2Pin = 20
-        Motor2In1Pin = 21
-        Motor2In2Pin = 26
-        Resolution   = '640x480'
-        ImageEffect  = 'none'
+        IpAddress      = ''
+        Id             = 'pi'
+        Password       = 'raspberry'
+        Motor1In1Pin   = 19 % Explorer pHat
+        Motor1In2Pin   = 20
+        Motor2In1Pin   = 21
+        Motor2In2Pin   = 26
+        Resolution     = '640x480'
+        ImageEffect    = 'none'
+        HorizontalFlip = false
+        VerticalFlip   = false
     end
     
     %properties(DiscreteState)
@@ -44,7 +46,9 @@ classdef PiAvatar < matlab.System
     methods(Access = protected)
 
         function setupImpl(obj)
-            obj.cam.ImageEffect = obj.ImageEffect;
+            obj.cam.ImageEffect    = obj.ImageEffect;
+            obj.cam.HorizontalFlip = obj.HorizontalFlip;
+            obj.cam.VerticalFlip   = obj.VerticalFlip;
         end
         
         function stepImpl(obj,command)

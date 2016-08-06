@@ -22,7 +22,7 @@ function varargout = PiAvatarApp(varargin)
 
 % Edit the above text to modify the response to help PiAvatarApp
 
-% Last Modified by GUIDE v2.5 07-Aug-2016 00:50:42
+% Last Modified by GUIDE v2.5 07-Aug-2016 01:35:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -219,6 +219,8 @@ set(handles.textNoConnection              , 'Enable', 'off')
 set(handles.textReady                     , 'Enable', 'on')
 set(handles.textInProcess                 , 'Enable', 'off')
 set(handles.popupmenuAvailableImageEffects, 'Enable', 'on')
+set(handles.checkboxHorizontalFlip        , 'Enable', 'on')
+set(handles.checkboxVerticalFlip          , 'Enable', 'on')
 set(handles.pushbuttonStart               , 'Enable', 'on')
 
 % Update image
@@ -235,6 +237,32 @@ imshow(img)
 % Update handles
 guidata(hObject,handles)
 
+% --- Executes on button press in pushbuttonDisconnect.
+function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbuttonDisconnect (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+while ~isempty(handles.piAvatar)
+    handles.piAvatar = [];
+end
+set(hObject                               , 'Enable', 'off')
+set(handles.editIpAddress                 , 'Enable', 'on')
+set(handles.editId                        , 'Enable', 'on')
+set(handles.editPassword                  , 'Enable', 'on')
+set(handles.pushbuttonConnect             , 'Enable', 'on')
+set(handles.textNoConnection              , 'Enable', 'on')
+set(handles.textReady                     , 'Enable', 'off')
+set(handles.textInProcess                 , 'Enable', 'off')
+set(handles.popupmenuAvailableResolutions , 'Enable', 'on')
+set(handles.popupmenuAvailableImageEffects, 'Enable', 'off')
+set(handles.checkboxHorizontalFlip        , 'Enable', 'off')
+set(handles.checkboxVerticalFlip          , 'Enable', 'off')
+set(handles.pushbuttonStart               , 'Enable', 'off')
+set(handles.pushbuttonStop                , 'Enable', 'off')
+
+% Update handles
+guidata(hObject,handles)
+
 % --- Executes on selection change in popupmenuAvailableImageEffects.
 function popupmenuAvailableImageEffects_Callback(hObject, eventdata, handles)
 % hObject    handle to popupmenuAvailableImageEffects (see GCBO)
@@ -243,10 +271,10 @@ function popupmenuAvailableImageEffects_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenuAvailableImageEffects contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenuAvailableImageEffects
+release(handles.piAvatar)
 idx = get(hObject, 'Value');
 val = hObject.String{idx};
 set(handles.piAvatar,'ImageEffect',val)
-release(handles.piAvatar)
 
 for iter = 1:5
     step(handles.piAvatar,'Snapshot')
@@ -272,26 +300,43 @@ end
 % Get camera information
 set(hObject,'String', raspi.internal.cameraboard.AvailableImageEffects);
 
-% --- Executes on button press in pushbuttonDisconnect.
-function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbuttonDisconnect (see GCBO)
+
+% --- Executes on button press in checkboxHorizontalFlip.
+function checkboxHorizontalFlip_Callback(hObject, eventdata, handles)
+% hObject    handle to checkboxHorizontalFlip (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-while ~isempty(handles.piAvatar)
-    handles.piAvatar = [];
+
+% Hint: get(hObject,'Value') returns toggle state of checkboxHorizontalFlip
+release(handles.piAvatar)
+flag = get(hObject, 'Value');
+set(handles.piAvatar,'HorizontalFlip',flag)
+
+for iter = 1:5
+    step(handles.piAvatar,'Snapshot')
 end
-set(hObject                               , 'Enable', 'off')
-set(handles.editIpAddress                 , 'Enable', 'on')
-set(handles.editId                        , 'Enable', 'on')
-set(handles.editPassword                  , 'Enable', 'on')
-set(handles.pushbuttonConnect             , 'Enable', 'on')
-set(handles.textNoConnection              , 'Enable', 'on')
-set(handles.textReady                     , 'Enable', 'off')
-set(handles.textInProcess                 , 'Enable', 'off')
-set(handles.popupmenuAvailableResolutions , 'Enable', 'on')
-set(handles.popupmenuAvailableImageEffects, 'Enable', 'off')
-set(handles.pushbuttonStart               , 'Enable', 'off')
-set(handles.pushbuttonStop                , 'Enable', 'off')
+img = get(handles.piAvatar,'img');
+set(handles.axesImage.Children,'CData',img)
+
+% Update handles
+guidata(hObject,handles)
+
+% --- Executes on button press in checkboxVerticalFlip.
+function checkboxVerticalFlip_Callback(hObject, eventdata, handles)
+% hObject    handle to checkboxVerticalFlip (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkboxVerticalFlip
+release(handles.piAvatar)
+flag = get(hObject, 'Value');
+set(handles.piAvatar,'VerticalFlip',flag)
+
+for iter = 1:5
+    step(handles.piAvatar,'Snapshot')
+end
+img = get(handles.piAvatar,'img');
+set(handles.axesImage.Children,'CData',img)
 
 % Update handles
 guidata(hObject,handles)
