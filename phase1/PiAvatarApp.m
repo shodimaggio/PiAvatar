@@ -309,10 +309,6 @@ set(handles.textNoConnection              , 'Enable', 'off')
 set(handles.textReady                     , 'Enable', 'on')
 set(handles.textInProcess                 , 'Enable', 'off')
 set(handles.popupmenuAvailableImageEffects, 'Enable', 'on')
-% Random 
-axes(handles.axesImage)
-img = rand(size(get(handles.axesImage.Children,'CData')));
-set(handles.axesImage.Children,'CData',img)
 
 % Release piAvatar
 release(handles.piAvatar)
@@ -335,12 +331,13 @@ set(handles.textInProcess                 , 'Enable', 'on')
 set(handles.popupmenuAvailableResolutions , 'Enable', 'off')
 set(handles.popupmenuAvailableImageEffects, 'Enable', 'off')
 
+% Update handles
+guidata(hObject,handles)
+
 % Get snapshot
-for iter = 1:100
+while(strcmp(get(handles.textInProcess,'Enable'),'on'))
     step(handles.piAvatar,'Snapshot')
     img = get(handles.piAvatar,'img');
     set(handles.axesImage.Children,'CData',img)
+    drawnow
 end
-
-% Update handles
-guidata(hObject,handles)
