@@ -22,7 +22,7 @@ function varargout = PiAvatarApp(varargin)
 
 % Edit the above text to modify the response to help PiAvatarApp
 
-% Last Modified by GUIDE v2.5 06-Aug-2016 20:24:18
+% Last Modified by GUIDE v2.5 07-Aug-2016 00:50:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -165,6 +165,7 @@ strheight = strtok(res,'x');
 width  = str2double(strwidth);
 height = str2double(strheight);
 axes(handles.axesImage)
+%set(handles.axesImage.Children,'CData',rand(height,width,3))
 imshow(rand(height,width,3));
 
 % Update handless
@@ -183,16 +184,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 set(hObject,'String', raspi.internal.cameraboard.AvailableResolutions);
-
-% Initial image
-idx = get(hObject.String, 'Value');
-res = hObject.String{idx};
-[strwidth,res] = strtok(res,'x');
-strheight = strtok(res,'x');
-width  = str2double(strwidth);
-height = str2double(strheight);
-axes(handles.axesImage)
-imshow(rand(height,width,3))
 
 % --- Executes on button press in pushbuttonConnect.
 function pushbuttonConnect_Callback(hObject, eventdata, handles)
@@ -234,11 +225,12 @@ set(handles.pushbuttonStart               , 'Enable', 'on')
 idx = get(handles.popupmenuAvailableImageEffects, 'Value');
 val = handles.popupmenuAvailableImageEffects.String{idx};
 set(handles.piAvatar,'ImageEffect',val)
-for iter = 1:4
+for iter = 1:5
     step(handles.piAvatar,'Snapshot')
 end
 img = get(handles.piAvatar,'img');
-set(handles.axesImage.Children,'CData',img)
+axes(handles.axesImage)
+imshow(img)
 
 % Update handles
 guidata(hObject,handles)
@@ -256,7 +248,7 @@ val = hObject.String{idx};
 set(handles.piAvatar,'ImageEffect',val)
 release(handles.piAvatar)
 
-for iter = 1:4
+for iter = 1:5
     step(handles.piAvatar,'Snapshot')
 end
 img = get(handles.piAvatar,'img');
