@@ -27,13 +27,13 @@ function varargout = PiAvatarApp(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @PiAvatarApp_OpeningFcn, ...
-                   'gui_OutputFcn',  @PiAvatarApp_OutputFcn, ...
-                   'gui_LayoutFcn',  [], ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @PiAvatarApp_OpeningFcn, ...
+    'gui_OutputFcn',  @PiAvatarApp_OutputFcn, ...
+    'gui_LayoutFcn',  [], ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
-   gui_State.gui_Callback = str2func(varargin{1});
+    gui_State.gui_Callback = str2func(varargin{1});
 end
 
 if nargout
@@ -84,19 +84,23 @@ function figure1_KeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if strcmp(get(handles.textInProcess,'Enable'),'on')
-    switch(eventdata.Key)
-        case 'uparrow'
-            step(handles.piAvatar,'Forward')
-        case 'downarrow'
-            step(handles.piAvatar,'Reverse')
-        case 'leftarrow'
-            step(handles.piAvatar,'Turn left')
-        case 'rightarrow'
-            step(handles.piAvatar,'Turn right')
-        case 'space'
-            step(handles.piAvatar,'Brake')
-        otherwise
-            step(handles.piAvatar,'Neutral')    
+    try
+        switch(eventdata.Key)
+            case 'uparrow'
+                step(handles.piAvatar,'Forward')
+            case 'downarrow'
+                step(handles.piAvatar,'Reverse')
+            case 'leftarrow'
+                step(handles.piAvatar,'Turn left')
+            case 'rightarrow'
+                step(handles.piAvatar,'Turn right')
+            case 'b'
+                step(handles.piAvatar,'Brake')
+            case 'space'
+                step(handles.piAvatar,'Neutral')
+        end
+    catch
+        warning('figure1_KeyPressFcn: Network lag has occured.')
     end
 end
 
@@ -207,15 +211,17 @@ function pushbuttonConnect_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Instantiation of PiAvatar
-ipAddress= get(handles.editIpAddress,'String');
-id = get(handles.editId,'String');
-password = get(handles.editPassword,'String');
-idx = get(handles.popupmenuAvailableResolutions, 'Value');
-res = handles.popupmenuAvailableResolutions.String{idx};
-[strwidth,res] = strtok(res,'x');
-strheight = strtok(res,'x');
-width  = str2double(strwidth);
-height = str2double(strheight);
+ipAddress = get(handles.editIpAddress,'String');
+id        = get(handles.editId,'String');
+password  = get(handles.editPassword,'String');
+
+idx      = get(handles.popupmenuAvailableResolutions, 'Value');
+res      = handles.popupmenuAvailableResolutions.String{idx};
+[swidth,res] = strtok(res,'x');
+sheight  = strtok(res,'x');
+width    = str2double(swidth);
+height   = str2double(sheight);
+
 piAvatar = PiAvatar(...
     'IpAddress',ipAddress,...
     'Id',id,...
@@ -224,11 +230,11 @@ piAvatar = PiAvatar(...
 handles.piAvatar = piAvatar;
 
 % Update GUI
+set(hObject                               , 'Enable', 'off')
 set(handles.editIpAddress                 , 'Enable', 'off')
 set(handles.editId                        , 'Enable', 'off')
 set(handles.editPassword                  , 'Enable', 'off')
-set(handles.popupmenuAvailableResolutions , 'Enable', 'off');
-set(hObject                               , 'Enable', 'off')
+set(handles.popupmenuAvailableResolutions , 'Enable', 'off')
 set(handles.pushbuttonDisconnect          , 'Enable', 'on')
 set(handles.textNoConnection              , 'Enable', 'off')
 set(handles.textReady                     , 'Enable', 'on')
@@ -369,10 +375,12 @@ set(handles.textNoConnection              , 'Enable', 'off')
 set(handles.textReady                     , 'Enable', 'on')
 set(handles.textInProcess                 , 'Enable', 'off')
 set(handles.popupmenuAvailableImageEffects, 'Enable', 'on')
+set(handles.checkboxHorizontalFlip        , 'Enable', 'on')
+set(handles.checkboxVerticalFlip          , 'Enable', 'on')
 
 % Stop avatar
-step(handles.piAvatar,'Neutral')            
-            
+step(handles.piAvatar,'Neutral')
+
 % Release piAvatar
 release(handles.piAvatar)
 
@@ -393,13 +401,21 @@ set(handles.textReady                     , 'Enable', 'off')
 set(handles.textInProcess                 , 'Enable', 'on')
 set(handles.popupmenuAvailableResolutions , 'Enable', 'off')
 set(handles.popupmenuAvailableImageEffects, 'Enable', 'off')
+set(handles.checkboxHorizontalFlip        , 'Enable', 'off')
+set(handles.checkboxVerticalFlip          , 'Enable', 'off')
 
 % Update handles
 guidata(hObject,handles)
 
 % Get snapshot
+axes(handles.axesImage)
 while(strcmp(get(handles.textInProcess,'Enable'),'on'))
-    step(handles.piAvatar,'Snapshot')
+    try
+        step(handles.piAvatar,'Snapshot')
+    catch
+        warning('pushbuttonStart_Callback: Network lag has occured.')
+    end
+    %
     img = get(handles.piAvatar,'img');
     set(handles.axesImage.Children,'CData',img)
     drawnow
