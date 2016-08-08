@@ -85,7 +85,7 @@ function figure1_KeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if strcmp(handles.textInProcess.Enable,'on')
-    
+
     switch(eventdata.Key)
         case 'uparrow'
             handles.command = 'Forward';
@@ -244,6 +244,7 @@ try
     handles.checkboxHorizontalFlip.Enable         = 'on';
     handles.checkboxVerticalFlip.Enable           = 'on';
     handles.pushbuttonStart.Enable                = 'on';
+    handles.uipanelControlMonitor.Visible         = 'on';    
     
     % Update image
     idx = handles.popupmenuAvailableImageEffects.Value;
@@ -294,6 +295,7 @@ handles.checkboxHorizontalFlip.Enable         = 'off';
 handles.checkboxVerticalFlip.Enable           = 'off';
 handles.pushbuttonStart.Enable                = 'off';
 handles.pushbuttonStop.Enable                 = 'off';
+handles.uppanelControlMonitor.Visible         = 'off';    
 
 % Update handles
 guidata(hObject,handles)
@@ -386,8 +388,16 @@ handles.textInProcess.Enable                  = 'off';
 handles.popupmenuAvailableImageEffects.Enable = 'on';
 handles.checkboxHorizontalFlip.Enable         = 'on';
 handles.checkboxVerticalFlip.Enable           = 'on';
+%
+handles.textUparrow.Enable                    = 'off';
+handles.textDownarrow.Enable                  = 'off';
+handles.textLeftarrow.Enable                  = 'off';
+handles.textRightarrow.Enable                 = 'off';
+handles.textBrake.Enable                      = 'off';
+handles.textNeutral.Enable                    = 'off';
 
 % Stop avatar
+pause(0.1)
 step(handles.piAvatar,'Neutral')
 
 % Release piAvatar
@@ -412,6 +422,13 @@ handles.popupmenuAvailableResolutions.Enable  = 'off';
 handles.popupmenuAvailableImageEffects.Enable = 'off';
 handles.checkboxHorizontalFlip.Enable         = 'off';
 handles.checkboxVerticalFlip.Enable           = 'off';
+%
+handles.textUparrow.Enable                    = 'off';
+handles.textDownarrow.Enable                  = 'off';
+handles.textLeftarrow.Enable                  = 'off';
+handles.textRightarrow.Enable                 = 'off';
+handles.textBrake.Enable                      = 'off';
+handles.textNeutral.Enable                    = 'on';
 
 % Update handles
 guidata(hObject,handles)
@@ -428,6 +445,32 @@ while(strcmp(handles.textInProcess.Enable,'on'))
             step(handles.piAvatar,'Snapshot')
         else
             step(handles.piAvatar,curcommand)
+            if strcmp(precommand,'Forward')
+                handles.textUparrow.Enable    = 'off';
+            elseif strcmp(precommand,'Reverse')
+                handles.textDownarrow.Enable  = 'off';
+            elseif strcmp(precommand,'Turn left')
+                handles.textLeftarrow.Enable  = 'off';
+            elseif strcmp(precommand,'Turn right')                
+                handles.textRightarrow.Enable = 'off';
+            elseif strcmp(precommand,'Brake')
+                handles.textBrake.Enable      = 'off';
+            else
+                handles.textNeutral.Enable    = 'off';            
+            end
+            if strcmp(curcommand,'Forward')
+                handles.textUparrow.Enable    = 'on';
+            elseif strcmp(curcommand,'Reverse')
+                handles.textDownarrow.Enable  = 'on';
+            elseif strcmp(curcommand,'Turn left')
+                handles.textLeftarrow.Enable  = 'on';
+            elseif strcmp(curcommand,'Turn right')                
+                handles.textRightarrow.Enable = 'on';
+            elseif strcmp(curcommand,'Brake')
+                handles.textBrake.Enable      = 'on';
+            else
+                handles.textNeutral.Enable    = 'on';            
+            end            
             precommand = curcommand;
         end
     catch
