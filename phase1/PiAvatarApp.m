@@ -52,6 +52,7 @@ function PiAvatarApp_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   unrecognized PropertyName/PropertyValue pairs from the
 %            command line (see VARARGIN)
 handles.piAvatar = [];
+handles.command  = 'Neutral';
 
 % Choose default command line output for PiAvatarApp
 handles.output = hObject;
@@ -83,25 +84,24 @@ function figure1_KeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-if strcmp(get(handles.textInProcess,'Enable'),'on')
-    try
-        switch(eventdata.Key)
-            case 'uparrow'
-                step(handles.piAvatar,'Forward')
-            case 'downarrow'
-                step(handles.piAvatar,'Reverse')
-            case 'leftarrow'
-                step(handles.piAvatar,'Turn left')
-            case 'rightarrow'
-                step(handles.piAvatar,'Turn right')
-            case 'b'
-                step(handles.piAvatar,'Brake')
-            case 'space'
-                step(handles.piAvatar,'Neutral')
-        end
-    catch
-        warning('figure1_KeyPressFcn: Network lag has occured.')
+if strcmp(handles.textInProcess.Enable,'on')
+    
+    switch(eventdata.Key)
+        case 'uparrow'
+            handles.command = 'Forward';
+        case 'downarrow'
+            handles.command = 'Reverse';
+        case 'leftarrow'
+            handles.command = 'Turn left';
+        case 'rightarrow'
+            handles.command = 'Turn right';
+        case 'b'
+            handles.command = 'Brake';
+        case 'space'
+            handles.command = 'Neutral';
     end
+    guidata(hObject,handles);
+    
 end
 
 function editIpAddress_Callback(hObject, eventdata, handles)
@@ -177,7 +177,7 @@ function popupmenuAvailableResolutions_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenuAvailableResolutions contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenuAvailableResolutions
-idx = get(hObject, 'Value');
+idx = hObject.Value;
 res = hObject.String{idx};
 [strwidth,res] = strtok(res,'x');
 strheight = strtok(res,'x');
@@ -202,7 +202,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-set(hObject,'String', raspi.internal.cameraboard.AvailableResolutions);
+hObject.String = raspi.internal.cameraboard.AvailableResolutions;
 
 % --- Executes on button press in pushbuttonConnect.
 function pushbuttonConnect_Callback(hObject, eventdata, handles)
@@ -211,52 +211,66 @@ function pushbuttonConnect_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Instantiation of PiAvatar
-ipAddress = get(handles.editIpAddress,'String');
-id        = get(handles.editId,'String');
-password  = get(handles.editPassword,'String');
+ipAddress = handles.editIpAddress.String;
+id        = handles.editId.String;
+password  = handles.editPassword.String;
 
-idx      = get(handles.popupmenuAvailableResolutions, 'Value');
-res      = handles.popupmenuAvailableResolutions.String{idx};
+idx       = handles.popupmenuAvailableResolutions.Value;
+res       = handles.popupmenuAvailableResolutions.String{idx};
 [swidth,res] = strtok(res,'x');
 sheight  = strtok(res,'x');
 width    = str2double(swidth);
 height   = str2double(sheight);
 
-piAvatar = PiAvatar(...
-    'IpAddress',ipAddress,...
-    'Id',id,...
-    'Password',password,...
-    'Resolution',sprintf('%dx%d',width,height));
-handles.piAvatar = piAvatar;
-
-% Update GUI
-set(hObject                               , 'Enable', 'off')
-set(handles.editIpAddress                 , 'Enable', 'off')
-set(handles.editId                        , 'Enable', 'off')
-set(handles.editPassword                  , 'Enable', 'off')
-set(handles.popupmenuAvailableResolutions , 'Enable', 'off')
-set(handles.pushbuttonDisconnect          , 'Enable', 'on')
-set(handles.textNoConnection              , 'Enable', 'off')
-set(handles.textReady                     , 'Enable', 'on')
-set(handles.textInProcess                 , 'Enable', 'off')
-set(handles.popupmenuAvailableImageEffects, 'Enable', 'on')
-set(handles.checkboxHorizontalFlip        , 'Enable', 'on')
-set(handles.checkboxVerticalFlip          , 'Enable', 'on')
-set(handles.pushbuttonStart               , 'Enable', 'on')
-
-% Update image
-idx = get(handles.popupmenuAvailableImageEffects, 'Value');
-val = handles.popupmenuAvailableImageEffects.String{idx};
-set(handles.piAvatar,'ImageEffect',val)
-for iter = 1:5
-    step(handles.piAvatar,'Snapshot')
+try
+    piAvatar = PiAvatar(...
+        'IpAddress',ipAddress,...
+        'Id',id,...
+        'Password',password,...
+        'Resolution',sprintf('%dx%d',width,height));
+    handles.piAvatar = piAvatar;
+    
+    % Update GUI
+    hObject.Enable                                = 'off';
+    handles.editIpAddress.Enable                  = 'off';
+    handles.editId.Enable                         = 'off';
+    handles.editPassword.Enable                   = 'off';
+    handles.popupmenuAvailableResolutions.Enable  = 'off';
+    handles.pushbuttonDisconnect.Enable           = 'on';
+    handles.textNoConnection.Enable               = 'off';
+    handles.textReady.Enable                      = 'on';
+    handles.textInProcess.Enable                  = 'off';
+    handles.popupmenuAvailableImageEffects.Enable = 'on';
+    handles.checkboxHorizontalFlip.Enable         = 'on';
+    handles.checkboxVerticalFlip.Enable           = 'on';
+    handles.pushbuttonStart.Enable                = 'on';
+    
+    % Update image
+    idx = handles.popupmenuAvailableImageEffects.Value;
+    val = handles.popupmenuAvailableImageEffects.String{idx};
+    handles.piAvatar.ImageEffect = val;
+    for iter = 1:5
+        step(handles.piAvatar,'Snapshot')
+    end
+    axes(handles.axesImage)
+    imshow(handles.piAvatar.img)
+    
+    % Update handles
+    guidata(hObject,handles)
+catch
+    % http://jp.mathworks.com/help/matlab/ref/dialog.html
+    d = dialog('Position',[300 300 250 150],...
+        'Name','Warning: pushbuttonConnect_Callback');
+    txt = uicontrol('Parent',d,...
+        'Style','text',...
+        'Position',[20 80 210 40],...
+        'String','Connecton failed. Please retry.');
+    btn = uicontrol('Parent',d,...
+        'Position',[85 20 70 25],...
+        'String','OK',...
+        'Callback','delete(gcf)');
+    waitfor(d)
 end
-img = get(handles.piAvatar,'img');
-axes(handles.axesImage)
-imshow(img)
-
-% Update handles
-guidata(hObject,handles)
 
 % --- Executes on button press in pushbuttonDisconnect.
 function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
@@ -266,20 +280,20 @@ function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
 while ~isempty(handles.piAvatar)
     handles.piAvatar = [];
 end
-set(hObject                               , 'Enable', 'off')
-set(handles.editIpAddress                 , 'Enable', 'on')
-set(handles.editId                        , 'Enable', 'on')
-set(handles.editPassword                  , 'Enable', 'on')
-set(handles.pushbuttonConnect             , 'Enable', 'on')
-set(handles.textNoConnection              , 'Enable', 'on')
-set(handles.textReady                     , 'Enable', 'off')
-set(handles.textInProcess                 , 'Enable', 'off')
-set(handles.popupmenuAvailableResolutions , 'Enable', 'on')
-set(handles.popupmenuAvailableImageEffects, 'Enable', 'off')
-set(handles.checkboxHorizontalFlip        , 'Enable', 'off')
-set(handles.checkboxVerticalFlip          , 'Enable', 'off')
-set(handles.pushbuttonStart               , 'Enable', 'off')
-set(handles.pushbuttonStop                , 'Enable', 'off')
+hObject.Enable                                = 'off';
+handles.editIpAddress.Enable                  = 'on';
+handles.editId.Enable                         = 'on';
+handles.editPassword.Enable                   = 'on';
+handles.pushbuttonConnect.Enable              = 'on';
+handles.textNoConnection.Enable               = 'on';
+handles.textReady.Enable                      = 'off';
+handles.textInProcess.Enable                  = 'off';
+handles.popupmenuAvailableResolutions.Enable  = 'on';
+handles.popupmenuAvailableImageEffects.Enable = 'off';
+handles.checkboxHorizontalFlip.Enable         = 'off';
+handles.checkboxVerticalFlip.Enable           = 'off';
+handles.pushbuttonStart.Enable                = 'off';
+handles.pushbuttonStop.Enable                 = 'off';
 
 % Update handles
 guidata(hObject,handles)
@@ -293,15 +307,14 @@ function popupmenuAvailableImageEffects_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenuAvailableImageEffects contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenuAvailableImageEffects
 release(handles.piAvatar)
-idx = get(hObject, 'Value');
+idx = hObject.Value;
 val = hObject.String{idx};
-set(handles.piAvatar,'ImageEffect',val)
+handles.piAvatar.ImageEffect = val;
 
 for iter = 1:5
     step(handles.piAvatar,'Snapshot')
 end
-img = get(handles.piAvatar,'img');
-set(handles.axesImage.Children,'CData',img)
+handles.axesImage.Children.CData = handles.piAvatar.img;
 
 % Update handles
 guidata(hObject,handles)
@@ -319,7 +332,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % Get camera information
-set(hObject,'String', raspi.internal.cameraboard.AvailableImageEffects);
+hObject.String = raspi.internal.cameraboard.AvailableImageEffects;
 
 
 % --- Executes on button press in checkboxHorizontalFlip.
@@ -330,14 +343,12 @@ function checkboxHorizontalFlip_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxHorizontalFlip
 release(handles.piAvatar)
-flag = get(hObject, 'Value');
-set(handles.piAvatar,'HorizontalFlip',flag)
+handles.piAvatar.HorizontalFlip = hObject.Value;
 
 for iter = 1:5
     step(handles.piAvatar,'Snapshot')
 end
-img = get(handles.piAvatar,'img');
-set(handles.axesImage.Children,'CData',img)
+handles.axesImage.Children.CData = handles.piAvatar.img;
 
 % Update handles
 guidata(hObject,handles)
@@ -350,14 +361,12 @@ function checkboxVerticalFlip_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxVerticalFlip
 release(handles.piAvatar)
-flag = get(hObject, 'Value');
-set(handles.piAvatar,'VerticalFlip',flag)
+handles.piAvatar.VerticalFlip = hObject.Value;
 
 for iter = 1:5
     step(handles.piAvatar,'Snapshot')
 end
-img = get(handles.piAvatar,'img');
-set(handles.axesImage.Children,'CData',img)
+handles.axesImage.Children.CData = handles.piAvatar.img;
 
 % Update handles
 guidata(hObject,handles)
@@ -369,14 +378,14 @@ function pushbuttonStop_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Update GUI
-set(hObject                               , 'Enable', 'off')
-set(handles.pushbuttonStart               , 'Enable', 'on')
-set(handles.textNoConnection              , 'Enable', 'off')
-set(handles.textReady                     , 'Enable', 'on')
-set(handles.textInProcess                 , 'Enable', 'off')
-set(handles.popupmenuAvailableImageEffects, 'Enable', 'on')
-set(handles.checkboxHorizontalFlip        , 'Enable', 'on')
-set(handles.checkboxVerticalFlip          , 'Enable', 'on')
+hObject.Enable                                = 'off';
+handles.pushbuttonStart.Enable                = 'on';
+handles.textNoConnection.Enable               = 'off';
+handles.textReady.Enable                      = 'on';
+handles.textInProcess.Enable                  = 'off';
+handles.popupmenuAvailableImageEffects.Enable = 'on';
+handles.checkboxHorizontalFlip.Enable         = 'on';
+handles.checkboxVerticalFlip.Enable           = 'on';
 
 % Stop avatar
 step(handles.piAvatar,'Neutral')
@@ -394,29 +403,47 @@ function pushbuttonStart_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Update GUI
-set(hObject                               , 'Enable', 'off')
-set(handles.pushbuttonStop                , 'Enable', 'on')
-set(handles.textNoConnection              , 'Enable', 'off')
-set(handles.textReady                     , 'Enable', 'off')
-set(handles.textInProcess                 , 'Enable', 'on')
-set(handles.popupmenuAvailableResolutions , 'Enable', 'off')
-set(handles.popupmenuAvailableImageEffects, 'Enable', 'off')
-set(handles.checkboxHorizontalFlip        , 'Enable', 'off')
-set(handles.checkboxVerticalFlip          , 'Enable', 'off')
+hObject.Enable                                = 'off';
+handles.pushbuttonStop.Enable                 = 'on';
+handles.textNoConnection.Enable               = 'off';
+handles.textReady.Enable                      = 'off';
+handles.textInProcess.Enable                  = 'on';
+handles.popupmenuAvailableResolutions.Enable  = 'off';
+handles.popupmenuAvailableImageEffects.Enable = 'off';
+handles.checkboxHorizontalFlip.Enable         = 'off';
+handles.checkboxVerticalFlip.Enable           = 'off';
 
 % Update handles
 guidata(hObject,handles)
 
-% Get snapshot
+% Control PiAvatar
 axes(handles.axesImage)
-while(strcmp(get(handles.textInProcess,'Enable'),'on'))
+precommand = 'Neutral';
+step(handles.piAvatar,'Neutral')
+while(strcmp(handles.textInProcess.Enable,'on'))
+    handles = guidata(hObject);
+    curcommand = handles.command;
     try
-        step(handles.piAvatar,'Snapshot')
+        if strcmp(curcommand,precommand)
+            step(handles.piAvatar,'Snapshot')
+        else
+            step(handles.piAvatar,curcommand)
+            precommand = curcommand;
+        end
     catch
-        warning('pushbuttonStart_Callback: Network lag has occured.')
+        % http://jp.mathworks.com/help/matlab/ref/dialog.html
+        d = dialog('Position',[300 300 250 150],...
+            'Name','Warning: pushbuttonStart_Callback');
+        txt = uicontrol('Parent',d,...
+            'Style','text',...
+            'Position',[20 80 210 40],...
+            'String','Communication has failed.');
+        btn = uicontrol('Parent',d,...
+            'Position',[85 20 70 25],...
+            'String','OK',...
+            'Callback','delete(gcf)');
+        waitfor(d)
     end
-    %
-    img = get(handles.piAvatar,'img');
-    set(handles.axesImage.Children,'CData',img)
+    handles.axesImage.Children.CData = handles.piAvatar.img;
     drawnow
 end

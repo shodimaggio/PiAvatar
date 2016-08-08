@@ -52,6 +52,7 @@ classdef PiAvatar < matlab.System
         end
         
         function stepImpl(obj,command)
+
             if strcmp(command,     'Forward')
                 forward_(obj)
             elseif strcmp(command, 'Reverse')
@@ -71,6 +72,7 @@ classdef PiAvatar < matlab.System
                     'Command "%s" is not supported.', command);
                 throw(me);
             end
+            
         end
         
         function resetImpl(obj)
