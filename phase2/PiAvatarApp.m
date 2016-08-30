@@ -22,7 +22,7 @@ function varargout = PiAvatarApp(varargin)
 
 % Edit the above text to modify the response to help PiAvatarApp
 
-% Last Modified by GUIDE v2.5 29-Aug-2016 22:59:08
+% Last Modified by GUIDE v2.5 30-Aug-2016 18:32:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,6 +53,8 @@ function PiAvatarApp_OpeningFcn(hObject, eventdata, handles, varargin)
 %            command line (see VARARGIN)
 handles.piAvatar = [];
 handles.command  = 'Neutral';
+handles.tglLed1  = false;
+handles.tglLed2  = false;
 
 % Choose default command line output for PiAvatarApp
 handles.output = hObject;
@@ -95,14 +97,47 @@ if strcmp(handles.textInProcess.Enable,'on')
             handles.command = 'Turn left';
         case 'rightarrow'
             handles.command = 'Turn right';
-        case 'b'
-            handles.command = 'Brake';
         case 'space'
-            handles.command = 'Neutral';
+            handles.command = 'Brake';
+        case '1'
+            if handles.tglLed1
+                handles.command = 'Led1Off';
+                handles.tglLed1 = false;
+                handles.textLed1.Enable = 'off';
+            else
+                handles.command = 'Led1On';
+                handles.tglLed1 = true;
+                handles.textLed1.Enable = 'on';
+            end
+        case '2'
+            if handles.tglLed2
+                handles.command = 'Led2Off';
+                handles.tglLed2 = false;
+                handles.textLed2.Enable = 'off';
+            else
+                handles.command = 'Led2On';
+                handles.tglLed2 = true;
+                handles.textLed2.Enable = 'on';
+            end            
     end
     guidata(hObject,handles);
     
 end
+
+function figure1_KeyReleaseFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+if strcmp(handles.textInProcess.Enable,'on')
+    handles.command = 'Neutral';
+    guidata(hObject,handles);
+end
+
+
 
 function editIpAddress_Callback(hObject, eventdata, handles)
 % hObject    handle to editIpAddress (see GCBO)
@@ -416,11 +451,16 @@ handles.textDownarrow.Enable                  = 'off';
 handles.textLeftarrow.Enable                  = 'off';
 handles.textRightarrow.Enable                 = 'off';
 handles.textBrake.Enable                      = 'off';
-handles.textNeutral.Enable                    = 'off';
+handles.textLed1.Enable                       = 'off';
+handles.textLed2.Enable                       = 'off';
 
 % Stop avatar
 pause(0.1)
 step(handles.piAvatar,'Neutral')
+
+% Turn off LEDs
+step(handles.piAvatar,'Led1Off')
+step(handles.piAvatar,'Led2Off')
 
 % Release piAvatar
 release(handles.piAvatar)
@@ -450,7 +490,6 @@ handles.textDownarrow.Enable                  = 'off';
 handles.textLeftarrow.Enable                  = 'off';
 handles.textRightarrow.Enable                 = 'off';
 handles.textBrake.Enable                      = 'off';
-handles.textNeutral.Enable                    = 'on';
 
 % Update handles
 guidata(hObject,handles)
@@ -477,8 +516,6 @@ while(strcmp(handles.textInProcess.Enable,'on'))
                 handles.textRightarrow.Enable = 'off';
             elseif strcmp(precommand,'Brake')
                 handles.textBrake.Enable      = 'off';
-            else
-                handles.textNeutral.Enable    = 'off';            
             end
             if strcmp(curcommand,'Forward')
                 handles.textUparrow.Enable    = 'on';
@@ -490,8 +527,6 @@ while(strcmp(handles.textInProcess.Enable,'on'))
                 handles.textRightarrow.Enable = 'on';
             elseif strcmp(curcommand,'Brake')
                 handles.textBrake.Enable      = 'on';
-            else
-                handles.textNeutral.Enable    = 'on';            
             end            
             precommand = curcommand;
         end
@@ -509,7 +544,7 @@ while(strcmp(handles.textInProcess.Enable,'on'))
             'Callback','delete(gcf)');
         waitfor(d)
     end
-    if handles.checkboxPiCamera.Value
+    if ~isempty(handles.piAvatar) && handles.checkboxPiCamera.Value
         handles.axesImage.Children.CData = handles.piAvatar.img;
         drawnow
     end
