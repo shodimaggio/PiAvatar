@@ -1,12 +1,19 @@
 classdef PwmOutput < matlab.System ...
-        & coder.ExternalDependency ...        
+        & coder.ExternalDependency ...
         & matlab.system.mixin.Propagates ...
         & matlab.system.mixin.CustomIcon
     %
     % Write to a PWM output pin
     %
+    % Reference:
+    % - https://jp.mathworks.com/matlabcentral/fileexchange/39354-device-drivers
     %
-    % https://jp.mathworks.com/matlabcentral/fileexchange/39354-device-drivers
+    % Copyright (c) 2016-, Shogo MURAMATSU, All rights reserved.
+    %
+    % Contact address: Shogo MURAMATSU,
+    %    Faculty of Engineering, Niigata University,
+    %    8050 2-no-cho Ikarashi, Nishi-ku,
+    %    Niigata, 950-2181, JAPAN
     
     %#codegen 
     properties (Nontunable)
@@ -100,9 +107,9 @@ classdef PwmOutput < matlab.System ...
             end
         end
         
-        function icon = getIconImpl(~)
+        function icon = getIconImpl(obj)
             % Define a string as the icon for the System block in Simulink.
-            icon = 'PWM Write';
+            icon = sprintf('PWM Write (%d)', obj.Pin);
         end        
     end
     

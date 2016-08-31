@@ -9,7 +9,7 @@ void pwmOutputSetup(uint8_T pin, int32_T mode, int32_T divisor, uint32_T range)
     // Perform one-time wiringPi initialization
     if (!initialized) {
         wiringPiSetupGpio();
-        initialized = 1;
+        initialized = true;
     }
  
     pinMode(pin,PWM_OUTPUT);

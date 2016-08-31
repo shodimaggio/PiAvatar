@@ -19,6 +19,15 @@ function varargout = PiAvatarApp(varargin)
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
+%
+% Copyright (c) 2016-, Shogo MURAMATSU
+%
+% All rights reserved.
+%
+% Contact address: Shogo MURAMATSU,
+%    Faculty of Engineering, Niigata University,
+%    8050 2-no-cho Ikarashi, Nishi-ku,
+%    Niigata, 950-2181, JAPAN
 
 % Edit the above text to modify the response to help PiAvatarApp
 
