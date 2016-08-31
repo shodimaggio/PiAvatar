@@ -1,3 +1,12 @@
 *.asv
 phase1/matlab.mat
 phase2/matlab.mat
+phase3/matlab.mat
+phase3/SoftPwmOutputTest_ert_rtw/
+phase3/slprj/ert/
+phase3/slprj/
+*.original
+*.autosave
+*.elf
+phase3/PwmWriteTest_ert_rtw/
+phase3/PwmOutputTest_ert_rtw/
