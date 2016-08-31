@@ -2,8 +2,8 @@ classdef PiAvatar < matlab.System
     % PIAVATAR
     %
     
-    % Public, Tunable プロパティ
-    properties
+    % Public, Nontunable プロパティ
+    properties (Nontunable)
         IpAddress      = ''
         Id             = 'pi'
         Password       = 'raspberry'
@@ -13,11 +13,11 @@ classdef PiAvatar < matlab.System
         Motor2In2Pin   = 26
         Led1Pin        = 24
         Led2Pin        = 23
+        PiCamera       = false
         Resolution     = '640x480'
         ImageEffect    = 'none'
         HorizontalFlip = false
         VerticalFlip   = false
-        PiCamera       = false
     end
     
     %properties(DiscreteState)
