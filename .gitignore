@@ -10,3 +10,6 @@ phase3/slprj/
 *.elf
 phase3/PwmWriteTest_ert_rtw/
 phase3/PwmOutputTest_ert_rtw/
+matlab.mat
+sldrivers/slprj/
+sldrivers/PwmClear_ert_rtw/
