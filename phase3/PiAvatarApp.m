@@ -29,7 +29,7 @@ function varargout = PiAvatarApp(varargin)
 
 % Edit the above text to modify the response to help PiAvatarApp
 
-% Last Modified by GUIDE v2.5 31-Aug-2016 22:40:43
+% Last Modified by GUIDE v2.5 01-Sep-2016 15:57:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,6 +59,7 @@ function PiAvatarApp_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   unrecognized PropertyName/PropertyValue pairs from the
 %            command line (see VARARGIN)
 handles.piAvatar = [];
+handles.agHandle = AccelGraph('AxesHandle',handles.axesAccel);
 handles.command  = 'Neutral';
 handles.tglLed1  = false;
 handles.tglLed2  = false;
@@ -259,9 +260,9 @@ faceDetection = handles.checkboxFaceDetection.Value;
 idx       = handles.popupmenuAvailableResolutions.Value;
 res       = handles.popupmenuAvailableResolutions.String{idx};
 [swidth,res] = strtok(res,'x');
-sheight  = strtok(res,'x');
-width    = str2double(swidth);
-height   = str2double(sheight);
+sheight   = strtok(res,'x');
+width     = str2double(swidth);
+height    = str2double(sheight);
 
 try
     piAvatar = PiAvatar(...
@@ -306,7 +307,8 @@ try
             step(handles.piAvatar,'Snapshot')
         end
         axes(handles.axesImage)
-        imshow(handles.piAvatar.img)
+        %imshow(handles.piAvatar.img)
+        handles.axesImage.Children.CData = handles.piAvatar.img;
     end
     
     % Update handles
@@ -453,7 +455,8 @@ else
     handles.checkboxHorizontalFlip.Enable         = 'off';
     handles.checkboxVerticalFlip.Enable           = 'off';    
 end
-%
+
+% Control Monitor Panel
 handles.textUparrow.Enable                    = 'off';
 handles.textDownarrow.Enable                  = 'off';
 handles.textLeftarrow.Enable                  = 'off';
@@ -492,7 +495,8 @@ handles.popupmenuAvailableResolutions.Enable  = 'off';
 handles.popupmenuAvailableImageEffects.Enable = 'off';
 handles.checkboxHorizontalFlip.Enable         = 'off';
 handles.checkboxVerticalFlip.Enable           = 'off';
-%
+
+% Control Monitor Paneld
 handles.textUparrow.Enable                    = 'off';
 handles.textDownarrow.Enable                  = 'off';
 handles.textLeftarrow.Enable                  = 'off';
@@ -510,41 +514,51 @@ while(strcmp(handles.textInProcess.Enable,'on'))
     handles = guidata(hObject);
     curcommand = handles.command;
     try
-        if handles.checkboxPiCamera.Value && strcmp(curcommand,precommand)
-            step(handles.piAvatar,'Snapshot')
+        if strcmp(curcommand,precommand)
+            if handles.checkboxAccel.Value
+                step(handles.piAvatar,'Acceleration')
+            end
+            if handles.checkboxPiCamera.Value
+                step(handles.piAvatar,'Snapshot')
+            end
         else
             step(handles.piAvatar,curcommand)
-            if strcmp(precommand,'Forward')
-                handles.textUparrow.Enable    = 'off';
-            elseif strcmp(precommand,'Reverse')
-                handles.textDownarrow.Enable  = 'off';
-            elseif strcmp(precommand,'Turn left')
-                handles.textLeftarrow.Enable  = 'off';
-            elseif strcmp(precommand,'Turn right')                
-                handles.textRightarrow.Enable = 'off';
-            elseif strcmp(precommand,'Brake')
-                handles.textBrake.Enable      = 'off';
+            handles.textUparrow.Enable    = 'off';
+            handles.textDownarrow.Enable  = 'off';
+            handles.textLeftarrow.Enable  = 'off';
+            handles.textRightarrow.Enable = 'off';
+            handles.textBrake.Enable      = 'off';
+            switch (curcommand)
+                case 'Forward'
+                    handles.textUparrow.Enable    = 'on';
+                case 'Reverse'
+                    handles.textDownarrow.Enable  = 'on';
+                case 'Turn left'
+                    handles.textLeftarrow.Enable  = 'on';
+                case 'Turn right'
+                    handles.textRightarrow.Enable = 'on';
+                case 'Brake'
+                    handles.textBrake.Enable      = 'on';
             end
-            if strcmp(curcommand,'Forward')
-                handles.textUparrow.Enable    = 'on';
-            elseif strcmp(curcommand,'Reverse')
-                handles.textDownarrow.Enable  = 'on';
-            elseif strcmp(curcommand,'Turn left')
-                handles.textLeftarrow.Enable  = 'on';
-            elseif strcmp(curcommand,'Turn right')                
-                handles.textRightarrow.Enable = 'on';
-            elseif strcmp(curcommand,'Brake')
-                handles.textBrake.Enable      = 'on';
-            end            
             precommand = curcommand;
         end
-        if ~isempty(handles.piAvatar) && handles.checkboxPiCamera.Value
-            % 画像取得 
-            img_ = handles.piAvatar.img;
-            % 画像表示
-            handles.axesImage.Children.CData = img_;
-            drawnow
-        end
+        if ~isempty(handles.piAvatar) 
+            if handles.checkboxPiCamera.Value
+                % 画像取得 
+                img_ = handles.piAvatar.img;
+                % 画像表示
+                handles.axesImage.Children.CData = img_;
+                %uistack(findobj(handles.figure1,'Tag','axesImage'),'bottom')        
+            end
+            if handles.checkboxAccel.Value
+                % 加速度取得 
+                axl_ = handles.piAvatar.axl;
+                % 加速度表示
+                step(handles.agHandle,axl_);
+                %uistack(findobj(handles.figure1,'Tag','axesAccel'),'top')
+            end
+        end        
+        drawnow
     catch
         % http://jp.mathworks.com/help/matlab/ref/dialog.html
         d = dialog('Position',[300 300 250 150],...
@@ -576,7 +590,6 @@ else
     handles.checkboxFaceDetection.Enable  = 'off';    
 end
 
-
 % --- Executes on button press in checkboxFaceDetection.
 function checkboxFaceDetection_Callback(hObject, eventdata, handles)
 % hObject    handle to checkboxFaceDetection (see GCBO)
@@ -584,3 +597,19 @@ function checkboxFaceDetection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxFaceDetection
+
+
+% --- Executes on button press in checkboxAccel.
+function checkboxAccel_Callback(hObject, eventdata, handles)
+% hObject    handle to checkboxAccel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkboxAccel
+if hObject.Value
+    release(handles.agHandle)
+    step(handles.agHandle,[0 0 0])
+    handles.axesAccel.Visible = 'on';
+else
+    handles.axesAccel.Visible = 'off';
+end

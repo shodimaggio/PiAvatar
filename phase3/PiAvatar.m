@@ -15,6 +15,7 @@ classdef PiAvatar < matlab.System
         IpAddress      = ''
         Id             = 'pi'
         Password       = 'raspberry'
+        Pwm0Pin        = 18 
         Motor1In1Pin   = 19 
         Motor1In2Pin   = 20
         Motor2In1Pin   = 21
@@ -27,17 +28,23 @@ classdef PiAvatar < matlab.System
         HorizontalFlip = false
         VerticalFlip   = false
         FaceDetection  = true
+        SpiCs          = 'CE0'
+        SpiMode        = 0
+        SpiSpeed       = 1000000
     end
     
     %properties(DiscreteState)
     %end
     
     properties(Hidden, GetAccess = public, SetAccess = private)
-        Pwm0Pin   = 18 
         rpi
         cam
-        img
+        l3d        
         fcd
+        img
+        axl
+        %tmp
+        %dst
     end
     
     methods
@@ -69,8 +76,11 @@ classdef PiAvatar < matlab.System
                 obj.FaceDetection = false;
             end
             
+            % 加速度センサー(SPI) 初期化
+            obj.l3d = spidev(obj.rpi,obj.SpiCs,obj.SpiMode,obj.SpiSpeed);
+            
             % サーボモータ(GPIO)の動作を停止
-            configurePin(obj.rpi, obj.Pwm0Pin,   'DigitalOutput');
+            configurePin(obj.rpi, obj.Pwm0Pin, 'DigitalOutput');
             writeDigitalPin(obj.rpi, obj.Pwm0Pin, 0);            
         end
     end
@@ -81,6 +91,8 @@ classdef PiAvatar < matlab.System
             obj.cam.ImageEffect    = obj.ImageEffect;
             obj.cam.HorizontalFlip = obj.HorizontalFlip;
             obj.cam.VerticalFlip   = obj.VerticalFlip;
+            %
+            l3dsetup_(obj);
         end
         
         function stepImpl(obj,command)
@@ -107,13 +119,23 @@ classdef PiAvatar < matlab.System
                 ledoff_(obj,2)
             elseif obj.PiCamera && strcmp(command, 'Snapshot')
                 img_ = snapshot(obj.cam);
-                if obj.FaceDetection
+                if obj.FaceDetection % 顔検出
                     bboxes = step(obj.fcd, img_);
                     obj.img = insertObjectAnnotation(img_, ...
                         'rectangle', bboxes, 'Face');
                 else
                     obj.img = img_;
                 end
+            elseif strcmp(command, 'Acceleration')      
+                obj.axl = l3dxyzread_(obj);
+            %{
+            elseif strcmp(command, 'Temperature')      
+                obj.tmp = l3dtmpread_(obj);
+                disp(obj.tmp)                
+            elseif strcmp(command, 'Distance')      
+                obj.dst = l3dadc1read_(obj);
+                disp(obj.dst)                
+            %}
             else
                 me = MException('PiAvatar:InvalidCommand',...
                     'Command "%s" is not supported.', command);
@@ -186,5 +208,64 @@ classdef PiAvatar < matlab.System
             end
         end
         
+        function l3dsetup_(obj)
+            adCtrlReg1 = hex2dec('20'); % CTRL_REG1
+            diCtrlReg1 = hex2dec('7F');
+            writeRead(obj.l3d,[adCtrlReg1 diCtrlReg1]);
+            %{
+            adCtrlReg1 = hex2dec('1F'); % TEMP_CFG_REG
+            diCtrlReg1 = bitor(hex2dec('80'),hex2dec('40'));
+            writeRead(obj.l3d,[adCtrlReg1 diCtrlReg1]);     
+            %}
+        end
+        
+        function axl = l3dxyzread_(obj)
+            rwBit   = hex2dec('80'); % Read
+            msBit   = hex2dec('40'); % Multple read
+            %
+            adOutXl = hex2dec('28');
+            spiCom  = bitor(rwBit, msBit,  'uint8');
+            spiCom  = bitor(spiCom,adOutXl,'uint8');
+            spiCom  = [ spiCom repmat(hex2dec('00'),1,12) ];
+            dat     = writeRead(obj.l3d,spiCom);
+            xl = dat(3);
+            xh = dat(5);
+            x = obj.convdata_(xh,xl);
+            yl = dat(7);
+            yh = dat(9);
+            y = obj.convdata_(yh,yl);
+            zl = dat(11);
+            zh = dat(13);
+            z = obj.convdata_(zh,zl);        
+            %
+            axl = double([ x y z ])/(16*1024); % 重力加速度で正規化
+        end
+        
+        %{
+        function tmp = l3dtmpread_(obj)
+            rwBit   = hex2dec('80'); % Read
+            msBit   = hex2dec('40'); % Multple read
+            %
+            adOut1   = hex2dec('0c');
+            spiCom  = bitor(rwBit, msBit,  'uint8');
+            spiCom  = bitor(spiCom,adOut1, 'uint8');
+            spiCom  = [ spiCom repmat(hex2dec('00'),1,2) ];
+            dat     = writeRead(obj.l3d,spiCom);
+            tl = dat(2);
+            th = dat(3);
+            t  = obj.convdata_(th,tl);
+            tmp = double(t)/128;
+        end        
+        %}
     end
+    
+    methods (Static, Access = private)
+        function out = convdata_(high,low)
+            out = int32(bitshift(uint16(high),8)+uint16(low));
+            if bitand(high,hex2dec('80'))
+                out = out - 2*hex2dec('8000'); % 負値への変換
+            end
+        end
+    end
+    
 end
