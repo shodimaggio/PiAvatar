@@ -21,7 +21,9 @@ classdef AccelGraph < matlab.System
     
     properties (Hidden)
         seq
+        sch
         plh
+        txt
     end
     
     properties(DiscreteState)
@@ -52,12 +54,9 @@ classdef AccelGraph < matlab.System
             %
             obj.seq = repmat([x y z].',1,obj.NumberOfPlots);
             obj.Count = 1;            
-            obj.plh = scatter3(obj.seq(1,:),obj.seq(2,:),obj.seq(3,:),'o');
-            obj.plh.MarkerEdgeColor = 'c';
-            obj.plh.MarkerFaceColor = 'm';
-            xlabel('X')
-            ylabel('Y')
-            zlabel('Z')            
+            obj.sch = scatter3(obj.seq(1,:),obj.seq(2,:),obj.seq(3,:),'o');
+            obj.sch.MarkerEdgeColor = 'c';
+            obj.sch.MarkerFaceColor = 'm';
             %
             obj.AxesHandle.CameraPosition      = [ 0 0 -8 ];
             obj.AxesHandle.CameraPositionMode  = 'manual';
@@ -83,6 +82,27 @@ classdef AccelGraph < matlab.System
             obj.AxesHandle.ZColor              = [ 0 1 0 ];
             obj.AxesHandle.GridColor           = [ 0 1 0 ];
             obj.AxesHandle.LineWidth           = 2;
+            %
+            %%{
+            hold on 
+            obj.plh = plot3(...
+                [ obj.seq(1,obj.Count) 2                    -2                   ],...
+                [ 2                    obj.seq(2,obj.Count) 2                    ],...
+                [ 2                    2                    obj.seq(3,obj.Count) ],...
+                'o');
+            obj.plh.MarkerEdgeColor = 'w';
+            obj.plh.MarkerFaceColor = 'k';            
+            obj.txt = cell(3,1);
+            obj.txt{1} = text(obj.seq(1,obj.Count)+.2, 2.2, 2.2, num2str(obj.seq(1,obj.Count)));
+            obj.txt{2} = text(2.2,obj.seq(2,obj.Count)+.2, 2.2, num2str(obj.seq(2,obj.Count)));
+            obj.txt{3} = text(-1.8,2.2,obj.seq(1,obj.Count)+.2, num2str(obj.seq(3,obj.Count)));
+            for idx = 1:3
+                obj.txt{idx}.Color = [ 1 1 0 ];
+                obj.txt{idx}.EdgeColor = [ 1 1 1 ];
+                obj.txt{idx}.BackgroundColor = [ 0 0 0 ];
+            end
+            hold off
+            %%}            
         end
         
         function stepImpl(obj,u)
@@ -94,9 +114,20 @@ classdef AccelGraph < matlab.System
             else
                 data = u(:);
             end
-            obj.plh.XData(obj.Count) = data(1);
-            obj.plh.YData(obj.Count) = data(2);
-            obj.plh.ZData(obj.Count) = data(3);
+            obj.sch.XData(obj.Count) = data(1);
+            obj.sch.YData(obj.Count) = data(2);
+            obj.sch.ZData(obj.Count) = data(3);
+            %
+            obj.plh.XData = [data(1) 2       -2      ];
+            obj.plh.YData = [2       data(2) 2      ];
+            obj.plh.ZData = [2       2       data(3) ];
+            %
+            obj.txt{1}.Position = [(data(1)+.2) 2.2 2.2];
+            obj.txt{1}.String   = num2str(data(1));
+            obj.txt{2}.Position = [2.2 (data(2)+.2) 2.2];
+            obj.txt{2}.String   = num2str(data(2));
+            obj.txt{3}.Position = [-1.8 2.2 (data(3)+.2)];         
+            obj.txt{3}.String   = num2str(data(3));
         end
         
         function resetImpl(obj)

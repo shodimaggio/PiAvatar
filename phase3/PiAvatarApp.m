@@ -95,7 +95,7 @@ function figure1_KeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if strcmp(handles.textInProcess.Enable,'on')
-
+    
     switch(eventdata.Key)
         case 'uparrow'
             handles.command = 'Forward';
@@ -126,7 +126,7 @@ if strcmp(handles.textInProcess.Enable,'on')
                 handles.command = 'Led2On';
                 handles.tglLed2 = true;
                 handles.textLed2.Enable = 'on';
-            end            
+            end
     end
     guidata(hObject,handles);
     
@@ -226,6 +226,8 @@ width  = str2double(strwidth);
 height = str2double(strheight);
 axes(handles.axesImage)
 imshow(rand(height,width,3));
+uistack(handles.axesAccel,'top')
+uistack(handles.axesImage,'bottom')
 
 % Update handless
 guidata(hObject,handles)
@@ -251,64 +253,68 @@ function pushbuttonConnect_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Instantiation of PiAvatar
-ipAddress = handles.editIpAddress.String;
-id        = handles.editId.String;
-password  = handles.editPassword.String;
-piCamera  = handles.checkboxPiCamera.Value;
+ipAddress     = handles.editIpAddress.String;
+id            = handles.editId.String;
+password      = handles.editPassword.String;
+piCamera      = handles.checkboxPiCamera.Value;
 faceDetection = handles.checkboxFaceDetection.Value;
 
-idx       = handles.popupmenuAvailableResolutions.Value;
-res       = handles.popupmenuAvailableResolutions.String{idx};
+idx          = handles.popupmenuAvailableResolutions.Value;
+res          = handles.popupmenuAvailableResolutions.String{idx};
 [swidth,res] = strtok(res,'x');
-sheight   = strtok(res,'x');
-width     = str2double(swidth);
-height    = str2double(sheight);
+sheight      = strtok(res,'x');
+width        = str2double(swidth);
+height       = str2double(sheight);
 
 try
-    piAvatar = PiAvatar(...
+    handles.piAvatar = PiAvatar(...
         'IpAddress',ipAddress,...
         'Id',id,...
         'Password',password,...
         'Resolution',sprintf('%dx%d',width,height),...
         'PiCamera',piCamera,...
         'FaceDetection',faceDetection);
-    handles.piAvatar = piAvatar;
     
     % Update GUI
-    hObject.Enable                                = 'off';
-    handles.editIpAddress.Enable                  = 'off';
-    handles.editId.Enable                         = 'off';
-    handles.editPassword.Enable                   = 'off';
-    handles.checkboxPiCamera.Enable               = 'off';
-    handles.checkboxFaceDetection.Enable          = 'off';
-    handles.popupmenuAvailableResolutions.Enable  = 'off';    
-    handles.pushbuttonDisconnect.Enable           = 'on';
-    handles.textNoConnection.Enable               = 'off';
-    handles.textReady.Enable                      = 'on';
-    handles.textInProcess.Enable                  = 'off';
-    if handles.checkboxPiCamera.Value 
-        handles.popupmenuAvailableImageEffects.Enable = 'on';
-        handles.checkboxHorizontalFlip.Enable         = 'on';
-        handles.checkboxVerticalFlip.Enable           = 'on';        
-    else
-        handles.popupmenuAvailableImageEffects.Enable = 'off';
-        handles.checkboxHorizontalFlip.Enable         = 'off';
-        handles.checkboxVerticalFlip.Enable           = 'off';
+    hObject.Enable = 'off';
+    %
+    uiobjs = findobj('UserData','Initialization');
+    for idx = 1:length(uiobjs)
+        uiobjs(idx).Enable = 'off';
     end
+    %
+    handles.textNoConnection.Enable               = 'off';
+    handles.textInProcess.Enable                  = 'off';
+    handles.pushbuttonDisconnect.Enable           = 'on';
+    %
+    handles.textReady.Enable                      = 'on';
     handles.pushbuttonStart.Enable                = 'on';
-    handles.uipanelControlMonitor.Visible         = 'on';            
+    handles.uipanelControlMonitor.Visible         = 'on';
     
     % Update image
     if handles.checkboxPiCamera.Value
+        handles.popupmenuAvailableImageEffects.Enable = 'on';
+        handles.checkboxHorizontalFlip.Enable         = 'on';
+        handles.checkboxVerticalFlip.Enable           = 'on';
+        %
         idx = handles.popupmenuAvailableImageEffects.Value;
         val = handles.popupmenuAvailableImageEffects.String{idx};
         handles.piAvatar.ImageEffect = val;
         for iter = 1:5
             step(handles.piAvatar,'Snapshot')
         end
-        axes(handles.axesImage)
-        %imshow(handles.piAvatar.img)
-        handles.axesImage.Children.CData = handles.piAvatar.img;
+        if isempty(handles.axesImage.Children)
+            axes(handles.axesImage)
+            imshow(handles.piAvatar.img)
+            uistack(handles.axesAccel,'top')
+            uistack(handles.axesImage,'bottom')
+        else
+            handles.axesImage.Children.CData = handles.piAvatar.img;
+        end
+    else
+        handles.popupmenuAvailableImageEffects.Enable = 'off';
+        handles.checkboxHorizontalFlip.Enable         = 'off';
+        handles.checkboxVerticalFlip.Enable           = 'off';
     end
     
     % Update handles
@@ -337,27 +343,27 @@ while ~isempty(handles.piAvatar)
     handles.piAvatar = [];
 end
 hObject.Enable                                = 'off';
-handles.editIpAddress.Enable                  = 'on';
-handles.editId.Enable                         = 'on';
-handles.editPassword.Enable                   = 'on';
-handles.checkboxPiCamera.Enable               = 'on';
 handles.pushbuttonConnect.Enable              = 'on';
-handles.textNoConnection.Enable               = 'on';
-handles.textReady.Enable                      = 'off';
-handles.textInProcess.Enable                  = 'off';
-if handles.checkboxPiCamera.Value 
-    handles.checkboxFaceDetection.Enable          = 'on';
-    handles.popupmenuAvailableResolutions.Enable  = 'on';
-else
+%
+uiobjs = findobj('UserData','Initialization');
+for idx = 1:length(uiobjs)
+    uiobjs(idx).Enable = 'on';
+end
+if ~handles.checkboxPiCamera.Value
     handles.checkboxFaceDetection.Enable          = 'off';
     handles.popupmenuAvailableResolutions.Enable  = 'off';
 end
+%
+handles.textNoConnection.Enable               = 'on';
+handles.textReady.Enable                      = 'off';
+handles.textInProcess.Enable                  = 'off';
+%
 handles.popupmenuAvailableImageEffects.Enable = 'off';
 handles.checkboxHorizontalFlip.Enable         = 'off';
 handles.checkboxVerticalFlip.Enable           = 'off';
 handles.pushbuttonStart.Enable                = 'off';
 handles.pushbuttonStop.Enable                 = 'off';
-handles.uppanelControlMonitor.Visible         = 'off';    
+handles.uppanelControlMonitor.Visible         = 'off';
 
 % Update handles
 guidata(hObject,handles)
@@ -443,6 +449,7 @@ function pushbuttonStop_Callback(hObject, eventdata, handles)
 % Update GUI
 hObject.Enable                                = 'off';
 handles.pushbuttonStart.Enable                = 'on';
+%
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'on';
 handles.textInProcess.Enable                  = 'off';
@@ -453,17 +460,14 @@ if handles.checkboxPiCamera.Value
 else
     handles.popupmenuAvailableImageEffects.Enable = 'off';
     handles.checkboxHorizontalFlip.Enable         = 'off';
-    handles.checkboxVerticalFlip.Enable           = 'off';    
+    handles.checkboxVerticalFlip.Enable           = 'off';
 end
 
 % Control Monitor Panel
-handles.textUparrow.Enable                    = 'off';
-handles.textDownarrow.Enable                  = 'off';
-handles.textLeftarrow.Enable                  = 'off';
-handles.textRightarrow.Enable                 = 'off';
-handles.textBrake.Enable                      = 'off';
-handles.textLed1.Enable                       = 'off';
-handles.textLed2.Enable                       = 'off';
+uiobjs = findobj('UserData','Control Monitor');
+for idx = 1:length(uiobjs)
+    uiobjs(idx).Enable = 'off';
+end
 
 % Stop avatar
 pause(0.1)
@@ -488,20 +492,21 @@ function pushbuttonStart_Callback(hObject, eventdata, handles)
 % Update GUI
 hObject.Enable                                = 'off';
 handles.pushbuttonStop.Enable                 = 'on';
+%
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'off';
 handles.textInProcess.Enable                  = 'on';
+%
 handles.popupmenuAvailableResolutions.Enable  = 'off';
 handles.popupmenuAvailableImageEffects.Enable = 'off';
 handles.checkboxHorizontalFlip.Enable         = 'off';
 handles.checkboxVerticalFlip.Enable           = 'off';
 
-% Control Monitor Paneld
-handles.textUparrow.Enable                    = 'off';
-handles.textDownarrow.Enable                  = 'off';
-handles.textLeftarrow.Enable                  = 'off';
-handles.textRightarrow.Enable                 = 'off';
-handles.textBrake.Enable                      = 'off';
+% Control Monitor Panel
+uiobjs = findobj('UserData','Control Monitor');
+for idx = 1:length(uiobjs)
+    uiobjs(idx).Enable = 'off';
+end
 
 % Update handles
 guidata(hObject,handles)
@@ -523,11 +528,10 @@ while(strcmp(handles.textInProcess.Enable,'on'))
             end
         else
             step(handles.piAvatar,curcommand)
-            handles.textUparrow.Enable    = 'off';
-            handles.textDownarrow.Enable  = 'off';
-            handles.textLeftarrow.Enable  = 'off';
-            handles.textRightarrow.Enable = 'off';
-            handles.textBrake.Enable      = 'off';
+            uiobjs = findobj('UserData','Control Monitor');
+            for idx = 1:length(uiobjs)
+                uiobjs(idx).Enable = 'off';
+            end
             switch (curcommand)
                 case 'Forward'
                     handles.textUparrow.Enable    = 'on';
@@ -542,23 +546,22 @@ while(strcmp(handles.textInProcess.Enable,'on'))
             end
             precommand = curcommand;
         end
-        if ~isempty(handles.piAvatar) 
+        if ~isempty(handles.piAvatar)
             if handles.checkboxPiCamera.Value
-                % 画像取得 
+                % 画像取得
                 img_ = handles.piAvatar.img;
                 % 画像表示
                 handles.axesImage.Children.CData = img_;
-                %uistack(findobj(handles.figure1,'Tag','axesImage'),'bottom')        
+                uistack(handles.axesImage,'bottom')
             end
             if handles.checkboxAccel.Value
-                % 加速度取得 
+                % 加速度取得
                 axl_ = handles.piAvatar.axl;
                 % 加速度表示
                 step(handles.agHandle,axl_);
-                %uistack(findobj(handles.figure1,'Tag','axesAccel'),'top')
+                uistack(handles.axesAccel,'top')
             end
-        end        
-        drawnow
+        end
     catch
         % http://jp.mathworks.com/help/matlab/ref/dialog.html
         d = dialog('Position',[300 300 250 150],...
@@ -584,10 +587,10 @@ function checkboxPiCamera_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkboxPiCamera
 if hObject.Value
     handles.popupmenuAvailableResolutions.Enable  = 'on';
-    handles.checkboxFaceDetection.Enable  = 'on';    
+    handles.checkboxFaceDetection.Enable  = 'on';
 else
     handles.popupmenuAvailableResolutions.Enable  = 'off';
-    handles.checkboxFaceDetection.Enable  = 'off';    
+    handles.checkboxFaceDetection.Enable  = 'off';
 end
 
 % --- Executes on button press in checkboxFaceDetection.

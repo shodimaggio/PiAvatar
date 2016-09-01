@@ -9,14 +9,14 @@ classdef PiAvatar < matlab.System
     %    Faculty of Engineering, Niigata University,
     %    8050 2-no-cho Ikarashi, Nishi-ku,
     %    Niigata, 950-2181, JAPAN
-
+    
     % Public, Nontunable プロパティ
     properties (Nontunable)
         IpAddress      = ''
         Id             = 'pi'
         Password       = 'raspberry'
-        Pwm0Pin        = 18 
-        Motor1In1Pin   = 19 
+        Pwm0Pin        = 18
+        Motor1In1Pin   = 19
         Motor1In2Pin   = 20
         Motor2In1Pin   = 21
         Motor2In2Pin   = 26
@@ -39,12 +39,10 @@ classdef PiAvatar < matlab.System
     properties(Hidden, GetAccess = public, SetAccess = private)
         rpi
         cam
-        l3d        
+        l3d
         fcd
         img
         axl
-        %tmp
-        %dst
     end
     
     methods
@@ -52,7 +50,7 @@ classdef PiAvatar < matlab.System
         % コンストラクタ
         function obj = PiAvatar(varargin)
             setProperties(obj,nargin,varargin{:});
-
+            
             % Raspberry Pi オブジェクト生成
             obj.rpi = raspi(obj.IpAddress,obj.Id,obj.Password);
             
@@ -81,7 +79,7 @@ classdef PiAvatar < matlab.System
             
             % サーボモータ(GPIO)の動作を停止
             configurePin(obj.rpi, obj.Pwm0Pin, 'DigitalOutput');
-            writeDigitalPin(obj.rpi, obj.Pwm0Pin, 0);            
+            writeDigitalPin(obj.rpi, obj.Pwm0Pin, 0);
         end
     end
     
@@ -97,53 +95,46 @@ classdef PiAvatar < matlab.System
         
         function stepImpl(obj,command)
             
-            if strcmp(command,     'Forward')
-                forward_(obj)
-            elseif strcmp(command, 'Reverse')
-                reverse_(obj)
-            elseif strcmp(command, 'Turn right')
-                turnRight_(obj)
-            elseif strcmp(command, 'Turn left')
-                turnLeft_(obj)
-            elseif strcmp(command, 'Brake')
-                brake_(obj)
-            elseif strcmp(command, 'Neutral')
-                neutral_(obj)
-            elseif strcmp(command, 'Led1On')
-                ledon_(obj,1)
-            elseif strcmp(command, 'Led1Off')
-                ledoff_(obj,1)
-            elseif strcmp(command, 'Led2On')
-                ledon_(obj,2)
-            elseif strcmp(command, 'Led2Off')
-                ledoff_(obj,2)
-            elseif obj.PiCamera && strcmp(command, 'Snapshot')
-                img_ = snapshot(obj.cam);
-                if obj.FaceDetection % 顔検出
-                    bboxes = step(obj.fcd, img_);
-                    obj.img = insertObjectAnnotation(img_, ...
-                        'rectangle', bboxes, 'Face');
-                else
-                    obj.img = img_;
-                end
-            elseif strcmp(command, 'Acceleration')      
-                obj.axl = l3dxyzread_(obj);
-            %{
-            elseif strcmp(command, 'Temperature')      
-                obj.tmp = l3dtmpread_(obj);
-                disp(obj.tmp)                
-            elseif strcmp(command, 'Distance')      
-                obj.dst = l3dadc1read_(obj);
-                disp(obj.dst)                
-            %}
-            else
-                me = MException('PiAvatar:InvalidCommand',...
-                    'Command "%s" is not supported.', command);
-                throw(me);
+            switch(command)
+                case 'Forward'
+                    forward_(obj)
+                case 'Reverse'
+                    reverse_(obj)
+                case 'Turn right'
+                    turnRight_(obj)
+                case 'Turn left'
+                    turnLeft_(obj)
+                case 'Brake'
+                    brake_(obj)
+                case 'Neutral'
+                    neutral_(obj)
+                case 'Led1On'
+                    ledon_(obj,1)
+                case 'Led1Off'
+                    ledoff_(obj,1)
+                case 'Led2On'
+                    ledon_(obj,2)
+                case 'Led2Off'
+                    ledoff_(obj,2)
+                case 'Snapshot'
+                    if obj.PiCamera
+                        img_ = snapshot(obj.cam);
+                        if obj.FaceDetection % 顔検出
+                            bboxes = step(obj.fcd, img_);
+                            obj.img = insertObjectAnnotation(img_, ...
+                                'rectangle', bboxes, 'Face');
+                        else
+                            obj.img = img_;
+                        end
+                    end
+                case 'Acceleration'
+                    obj.axl = l3dxyzread_(obj);
+                otherwise
+                    me = MException('PiAvatar:InvalidCommand',...
+                        'Command "%s" is not supported.', command);
+                    throw(me);
             end
-            
         end
-        
     end
     
     methods(Access = private)
@@ -212,11 +203,6 @@ classdef PiAvatar < matlab.System
             adCtrlReg1 = hex2dec('20'); % CTRL_REG1
             diCtrlReg1 = hex2dec('7F');
             writeRead(obj.l3d,[adCtrlReg1 diCtrlReg1]);
-            %{
-            adCtrlReg1 = hex2dec('1F'); % TEMP_CFG_REG
-            diCtrlReg1 = bitor(hex2dec('80'),hex2dec('40'));
-            writeRead(obj.l3d,[adCtrlReg1 diCtrlReg1]);     
-            %}
         end
         
         function axl = l3dxyzread_(obj)
@@ -236,27 +222,11 @@ classdef PiAvatar < matlab.System
             y = obj.convdata_(yh,yl);
             zl = dat(11);
             zh = dat(13);
-            z = obj.convdata_(zh,zl);        
+            z = obj.convdata_(zh,zl);
             %
-            axl = double([ x y z ])/(16*1024); % 重力加速度で正規化
+            axl = double([ x -y -z ])/(16*1024); % 重力加速度で正規化
         end
         
-        %{
-        function tmp = l3dtmpread_(obj)
-            rwBit   = hex2dec('80'); % Read
-            msBit   = hex2dec('40'); % Multple read
-            %
-            adOut1   = hex2dec('0c');
-            spiCom  = bitor(rwBit, msBit,  'uint8');
-            spiCom  = bitor(spiCom,adOut1, 'uint8');
-            spiCom  = [ spiCom repmat(hex2dec('00'),1,2) ];
-            dat     = writeRead(obj.l3d,spiCom);
-            tl = dat(2);
-            th = dat(3);
-            t  = obj.convdata_(th,tl);
-            tmp = double(t)/128;
-        end        
-        %}
     end
     
     methods (Static, Access = private)
