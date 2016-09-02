@@ -111,21 +111,21 @@ if strcmp(handles.textInProcess.Enable,'on')
             if handles.tglLed1
                 handles.command = 'Led1Off';
                 handles.tglLed1 = false;
-                handles.textLed1.Enable = 'off';
+                %handles.textLed1.Enable = 'off';
             else
                 handles.command = 'Led1On';
                 handles.tglLed1 = true;
-                handles.textLed1.Enable = 'on';
+                %handles.textLed1.Enable = 'on';
             end
         case '2'
             if handles.tglLed2
                 handles.command = 'Led2Off';
                 handles.tglLed2 = false;
-                handles.textLed2.Enable = 'off';
+                %handles.textLed2.Enable = 'off';
             else
                 handles.command = 'Led2On';
                 handles.tglLed2 = true;
-                handles.textLed2.Enable = 'on';
+                %handles.textLed2.Enable = 'on';
             end
     end
     guidata(hObject,handles);
@@ -526,12 +526,27 @@ while(strcmp(handles.textInProcess.Enable,'on'))
             if handles.checkboxPiCamera.Value
                 step(handles.piAvatar,'Snapshot')
             end
+            if handles.tglLed1 && strcmp(handles.textLed1.Enable,'off')
+                handles.textLed1.Enable = 'on';
+                step(handles.piAvatar,'Led1On')
+            elseif ~handles.tglLed1 && strcmp(handles.textLed1.Enable,'on')
+                handles.textLed1.Enable = 'off';                    
+                step(handles.piAvatar,'Led1Off')
+            end
+            if handles.tglLed2 && strcmp(handles.textLed2.Enable,'off')
+                handles.textLed2.Enable = 'on';
+                step(handles.piAvatar,'Led2On')
+            elseif ~handles.tglLed2 && strcmp(handles.textLed2.Enable,'on')
+                handles.textLed2.Enable = 'off';
+                step(handles.piAvatar,'Led2Off')
+            end            
         else
             step(handles.piAvatar,curcommand)
-            uiobjs = findobj('UserData','Control Monitor');
-            for idx = 1:length(uiobjs)
-                uiobjs(idx).Enable = 'off';
-            end
+            handles.textUparrow.Enable    = 'off';
+            handles.textDownarrow.Enable  = 'off';
+            handles.textLeftarrow.Enable  = 'off';
+            handles.textRightarrow.Enable = 'off';
+            handles.textBrake.Enable      = 'off';            
             switch (curcommand)
                 case 'Forward'
                     handles.textUparrow.Enable    = 'on';
