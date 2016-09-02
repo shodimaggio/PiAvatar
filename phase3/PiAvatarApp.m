@@ -29,7 +29,7 @@ function varargout = PiAvatarApp(varargin)
 
 % Edit the above text to modify the response to help PiAvatarApp
 
-% Last Modified by GUIDE v2.5 01-Sep-2016 15:57:35
+% Last Modified by GUIDE v2.5 02-Sep-2016 13:45:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -262,6 +262,7 @@ id            = handles.editId.String;
 password      = handles.editPassword.String;
 piCamera      = handles.checkboxPiCamera.Value;
 faceDetection = handles.checkboxFaceDetection.Value;
+histogramEq   = handles.checkboxHistogramEq.Value;
 
 idx          = handles.popupmenuAvailableResolutions.Value;
 res          = handles.popupmenuAvailableResolutions.String{idx};
@@ -277,7 +278,8 @@ try
         'Password',password,...
         'Resolution',sprintf('%dx%d',width,height),...
         'PiCamera',piCamera,...
-        'FaceDetection',faceDetection);
+        'FaceDetection',faceDetection,...
+        'HistogramEq',histogramEq);
     
     % Update GUI
     hObject.Enable = 'off';
@@ -340,6 +342,7 @@ catch
     waitfor(d)
 end
 
+
 % --- Executes on button press in pushbuttonDisconnect.
 function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbuttonDisconnect (see GCBO)
@@ -357,6 +360,7 @@ for idx = 1:length(uiobjs)
 end
 if ~handles.checkboxPiCamera.Value
     handles.checkboxFaceDetection.Enable          = 'off';
+    handles.checkboxHistogramEq.Enable            = 'off';    
     handles.popupmenuAvailableResolutions.Enable  = 'off';
 end
 %
@@ -459,6 +463,7 @@ handles.command = 'Neutral';
 % Update GUI
 hObject.Enable                                = 'off';
 handles.pushbuttonStart.Enable                = 'on';
+handles.pushbuttonDisconnect.Enable           = 'on';
 %
 handles.piState = 'Ready';
 guidata(hObject,handles);
@@ -506,6 +511,7 @@ function pushbuttonStart_Callback(hObject, eventdata, handles)
 % Update GUI
 hObject.Enable                                = 'off';
 handles.pushbuttonStop.Enable                 = 'on';
+handles.pushbuttonDisconnect.Enable           = 'off';
 %
 handles.piState = 'In process';
 handles.textNoConnection.Enable               = 'off';
@@ -530,11 +536,8 @@ guidata(hObject,handles)
 axes(handles.axesImage)
 precommand = 'Neutral';
 step(handles.piAvatar,'Neutral')
-%while(strcmp(handles.textInProcess.Enable,'on'))
 while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
-    %handles.isPiLocked = true;
-    %guidata(hObject,handles);
     curcommand = handles.command;
     try
         if strcmp(curcommand,precommand)
@@ -622,9 +625,11 @@ function checkboxPiCamera_Callback(hObject, eventdata, handles)
 if hObject.Value
     handles.popupmenuAvailableResolutions.Enable  = 'on';
     handles.checkboxFaceDetection.Enable  = 'on';
+    handles.checkboxHistogramEq.Enable    = 'on';        
 else
     handles.popupmenuAvailableResolutions.Enable  = 'off';
     handles.checkboxFaceDetection.Enable  = 'off';
+    handles.checkboxHistogramEq.Enable    = 'off';            
 end
 
 % --- Executes on button press in checkboxFaceDetection.
@@ -650,3 +655,12 @@ if hObject.Value
 else
     handles.axesAccel.Visible = 'off';
 end
+
+
+% --- Executes on button press in checkboxHistogramEq.
+function checkboxHistogramEq_Callback(hObject, eventdata, handles)
+% hObject    handle to checkboxHistogramEq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkboxHistogramEq
