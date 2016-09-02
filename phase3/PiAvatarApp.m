@@ -63,6 +63,7 @@ handles.agHandle = AccelGraph('AxesHandle',handles.axesAccel);
 handles.command  = 'Neutral';
 handles.tglLed1  = false;
 handles.tglLed2  = false;
+handles.piState  = 'No connection';
 
 % Choose default command line output for PiAvatarApp
 handles.output = hObject;
@@ -94,7 +95,8 @@ function figure1_KeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-if strcmp(handles.textInProcess.Enable,'on')
+%if strcmp(handles.textInProcess.Enable,'on')
+if strcmp(handles.piState,'In process')
     
     switch(eventdata.Key)
         case 'uparrow'
@@ -140,7 +142,8 @@ function figure1_KeyReleaseFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-if strcmp(handles.textInProcess.Enable,'on')
+%if strcmp(handles.textInProcess.Enable,'on')
+if strcmp(handles.piState,'In process')
     handles.command = 'Neutral';
     guidata(hObject,handles);
 end
@@ -283,11 +286,13 @@ try
         uiobjs(idx).Enable = 'off';
     end
     %
-    handles.textNoConnection.Enable               = 'off';
-    handles.textInProcess.Enable                  = 'off';
     handles.pushbuttonDisconnect.Enable           = 'on';
     %
-    handles.textReady.Enable                      = 'on';
+    handles.piState = 'Ready';
+    handles.textNoConnection.Enable               = 'off';
+    handles.textReady.Enable                      = 'on';    
+    handles.textInProcess.Enable                  = 'off';
+    %
     handles.pushbuttonStart.Enable                = 'on';
     handles.uipanelControlMonitor.Visible         = 'on';
     
@@ -323,11 +328,11 @@ catch
     % http://jp.mathworks.com/help/matlab/ref/dialog.html
     d = dialog('Position',[300 300 250 150],...
         'Name','Warning: pushbuttonConnect_Callback');
-    txt = uicontrol('Parent',d,...
+    uicontrol('Parent',d,...
         'Style','text',...
         'Position',[20 80 210 40],...
         'String','Connecton failed. Please retry.');
-    btn = uicontrol('Parent',d,...
+    uicontrol('Parent',d,...
         'Position',[85 20 70 25],...
         'String','OK',...
         'Callback','delete(gcf)');
@@ -354,6 +359,7 @@ if ~handles.checkboxPiCamera.Value
     handles.popupmenuAvailableResolutions.Enable  = 'off';
 end
 %
+handles.piState = 'No connection';
 handles.textNoConnection.Enable               = 'on';
 handles.textReady.Enable                      = 'off';
 handles.textInProcess.Enable                  = 'off';
@@ -450,9 +456,11 @@ function pushbuttonStop_Callback(hObject, eventdata, handles)
 hObject.Enable                                = 'off';
 handles.pushbuttonStart.Enable                = 'on';
 %
+handles.pistate = 'Ready';
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'on';
 handles.textInProcess.Enable                  = 'off';
+%
 if handles.checkboxPiCamera.Value
     handles.popupmenuAvailableImageEffects.Enable = 'on';
     handles.checkboxHorizontalFlip.Enable         = 'on';
@@ -493,6 +501,7 @@ function pushbuttonStart_Callback(hObject, eventdata, handles)
 hObject.Enable                                = 'off';
 handles.pushbuttonStop.Enable                 = 'on';
 %
+handles.piState = 'In process';
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'off';
 handles.textInProcess.Enable                  = 'on';
@@ -515,7 +524,8 @@ guidata(hObject,handles)
 axes(handles.axesImage)
 precommand = 'Neutral';
 step(handles.piAvatar,'Neutral')
-while(strcmp(handles.textInProcess.Enable,'on'))
+%while(strcmp(handles.textInProcess.Enable,'on'))
+while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
     curcommand = handles.command;
     try
@@ -574,18 +584,17 @@ while(strcmp(handles.textInProcess.Enable,'on'))
                 axl_ = handles.piAvatar.axl;
                 % ‰Á‘¬“x•\Ž¦
                 step(handles.agHandle,axl_);
-                uistack(handles.axesAccel,'top')
             end
         end
     catch
         % http://jp.mathworks.com/help/matlab/ref/dialog.html
         d = dialog('Position',[300 300 250 150],...
             'Name','Warning: pushbuttonStart_Callback');
-        txt = uicontrol('Parent',d,...
+        uicontrol('Parent',d,...
             'Style','text',...
             'Position',[20 80 210 40],...
             'String','Communication has failed.');
-        btn = uicontrol('Parent',d,...
+        uicontrol('Parent',d,...
             'Position',[85 20 70 25],...
             'String','OK',...
             'Callback','delete(gcf)');
