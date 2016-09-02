@@ -27,10 +27,14 @@ classdef PiAvatar < matlab.System
         ImageEffect    = 'none'
         HorizontalFlip = false
         VerticalFlip   = false
-        FaceDetection  = true
+        FaceDetection  = false
         SpiCs          = 'CE0'
         SpiMode        = 0
         SpiSpeed       = 1000000
+    end
+    
+    properties
+        HistogramEq    = false
     end
     
     %properties(DiscreteState)
@@ -119,13 +123,17 @@ classdef PiAvatar < matlab.System
                 case 'Snapshot'
                     if obj.PiCamera
                         img_ = snapshot(obj.cam);
+                        if obj.HistogramEq   % ヒストグラム均等化
+                            img_ = rgb2hsv(img_);
+                            img_(:,:,3) = histeq(img_(:,:,3));
+                            img_ = hsv2rgb(img_);
+                        end                        
                         if obj.FaceDetection % 顔検出
                             bboxes = step(obj.fcd, img_);
-                            obj.img = insertObjectAnnotation(img_, ...
+                            img_ = insertObjectAnnotation(img_, ...
                                 'rectangle', bboxes, 'Face');
-                        else
-                            obj.img = img_;
                         end
+                        obj.img = img_;
                     end
                 case 'Acceleration'
                     obj.axl = l3dxyzread_(obj);
