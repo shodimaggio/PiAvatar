@@ -64,6 +64,7 @@ handles.command  = 'Neutral';
 handles.tglLed1  = false;
 handles.tglLed2  = false;
 handles.piState  = 'No connection';
+%handles.isPiLocked = false;
 
 % Choose default command line output for PiAvatarApp
 handles.output = hObject;
@@ -452,11 +453,19 @@ function pushbuttonStop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% Stop avatar
+handles.command = 'Neutral';
+
 % Update GUI
 hObject.Enable                                = 'off';
 handles.pushbuttonStart.Enable                = 'on';
 %
-handles.pistate = 'Ready';
+handles.piState = 'Ready';
+guidata(hObject,handles);
+% handles = guidata(hObject);
+% while(handles.isPiLocked)
+% end
+%
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'on';
 handles.textInProcess.Enable                  = 'off';
@@ -477,15 +486,12 @@ for idx = 1:length(uiobjs)
     uiobjs(idx).Enable = 'off';
 end
 
-% Stop avatar
-pause(0.1)
-step(handles.piAvatar,'Neutral')
-
 % Turn off LEDs
 step(handles.piAvatar,'Led1Off')
 step(handles.piAvatar,'Led2Off')
 
 % Release piAvatar
+pause(0.1)
 release(handles.piAvatar)
 
 % Update handles
@@ -527,6 +533,8 @@ step(handles.piAvatar,'Neutral')
 %while(strcmp(handles.textInProcess.Enable,'on'))
 while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
+    %handles.isPiLocked = true;
+    %guidata(hObject,handles);
     curcommand = handles.command;
     try
         if strcmp(curcommand,precommand)
@@ -600,6 +608,8 @@ while(strcmp(handles.piState,'In process'))
             'Callback','delete(gcf)');
         waitfor(d)
     end
+    %handles.isPiLocked = false;
+    %guidata(hObject,handles);    
 end
 
 % --- Executes on button press in checkboxPiCamera.
