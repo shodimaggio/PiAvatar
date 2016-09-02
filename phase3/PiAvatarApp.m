@@ -283,27 +283,26 @@ try
     
     % Update GUI
     hObject.Enable = 'off';
+    handles.pushbuttonDisconnect.Enable           = 'on';
+    handles.pushbuttonStart.Enable                = 'on';
+    handles.uipanelControlMonitor.Visible         = 'on';
     %
     uiobjs = findobj('UserData','Initialization');
     for idx = 1:length(uiobjs)
         uiobjs(idx).Enable = 'off';
     end
     %
-    handles.pushbuttonDisconnect.Enable           = 'on';
-    %
     handles.piState = 'Ready';
     handles.textNoConnection.Enable               = 'off';
     handles.textReady.Enable                      = 'on';    
     handles.textInProcess.Enable                  = 'off';
-    %
-    handles.pushbuttonStart.Enable                = 'on';
-    handles.uipanelControlMonitor.Visible         = 'on';
     
     % Update image
     if handles.checkboxPiCamera.Value
-        handles.popupmenuAvailableImageEffects.Enable = 'on';
-        handles.checkboxHorizontalFlip.Enable         = 'on';
-        handles.checkboxVerticalFlip.Enable           = 'on';
+        uiobjs = findobj('UserData','PiConfiguration');
+        for idx = 1:length(uiobjs)
+            uiobjs(idx).Enable = 'on';
+        end        
         %
         idx = handles.popupmenuAvailableImageEffects.Value;
         val = handles.popupmenuAvailableImageEffects.String{idx};
@@ -320,9 +319,10 @@ try
             handles.axesImage.Children.CData = handles.piAvatar.img;
         end
     else
-        handles.popupmenuAvailableImageEffects.Enable = 'off';
-        handles.checkboxHorizontalFlip.Enable         = 'off';
-        handles.checkboxVerticalFlip.Enable           = 'off';
+        uiobjs = findobj('UserData','PiConfiguration');        
+        for idx = 1:length(uiobjs)
+            uiobjs(idx).Enalbe = 'off';
+        end
     end
     
     % Update handles
@@ -369,12 +369,14 @@ handles.textNoConnection.Enable               = 'on';
 handles.textReady.Enable                      = 'off';
 handles.textInProcess.Enable                  = 'off';
 %
-handles.popupmenuAvailableImageEffects.Enable = 'off';
-handles.checkboxHorizontalFlip.Enable         = 'off';
-handles.checkboxVerticalFlip.Enable           = 'off';
 handles.pushbuttonStart.Enable                = 'off';
 handles.pushbuttonStop.Enable                 = 'off';
 handles.uppanelControlMonitor.Visible         = 'off';
+%
+uiobjs = findobj('UserData','PiConfiguration');
+for idx = 1:length(uiobjs)
+    uiobjs(idx).Enable = 'off';
+end
 
 % Update handles
 guidata(hObject,handles)
@@ -475,14 +477,13 @@ handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'on';
 handles.textInProcess.Enable                  = 'off';
 %
-if handles.checkboxPiCamera.Value
-    handles.popupmenuAvailableImageEffects.Enable = 'on';
-    handles.checkboxHorizontalFlip.Enable         = 'on';
-    handles.checkboxVerticalFlip.Enable           = 'on';
-else
-    handles.popupmenuAvailableImageEffects.Enable = 'off';
-    handles.checkboxHorizontalFlip.Enable         = 'off';
-    handles.checkboxVerticalFlip.Enable           = 'off';
+uiobjs = findobj('UserData','PiConfiguration');
+for idx = 1:length(uiobjs)
+    if handles.checkboxPiCamera.Value
+        uiobjs(idx).Enable = 'on';
+    else
+        uiobjs(idx).Enable = 'off';
+    end
 end
 
 % Control Monitor Panel
@@ -518,10 +519,10 @@ handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'off';
 handles.textInProcess.Enable                  = 'on';
 %
-handles.popupmenuAvailableResolutions.Enable  = 'off';
-handles.popupmenuAvailableImageEffects.Enable = 'off';
-handles.checkboxHorizontalFlip.Enable         = 'off';
-handles.checkboxVerticalFlip.Enable           = 'off';
+uiobjs = findobj('UserData','PiConfiguration');
+for idx = 1:length(uiobjs)
+    uiobjs(idx).Enable = 'off';
+end
 
 % Control Monitor Panel
 uiobjs = findobj('UserData','Control Monitor');
