@@ -12,7 +12,7 @@ classdef AccelGraph < matlab.System
     
     properties (Nontunable)
         AxesHandle
-        NumberOfPlots = 8
+        NumberOfPlots = 4
     end
 
     properties 
