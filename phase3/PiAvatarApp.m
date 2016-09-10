@@ -114,21 +114,17 @@ if strcmp(handles.piState,'In process')
             if handles.tglLed1
                 handles.command = 'Led1Off';
                 handles.tglLed1 = false;
-                %handles.textLed1.Enable = 'off';
             else
                 handles.command = 'Led1On';
                 handles.tglLed1 = true;
-                %handles.textLed1.Enable = 'on';
             end
         case '2'
             if handles.tglLed2
                 handles.command = 'Led2Off';
                 handles.tglLed2 = false;
-                %handles.textLed2.Enable = 'off';
             else
                 handles.command = 'Led2On';
                 handles.tglLed2 = true;
-                %handles.textLed2.Enable = 'on';
             end
     end
     guidata(hObject,handles);
@@ -143,7 +139,6 @@ function figure1_KeyReleaseFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-%if strcmp(handles.textInProcess.Enable,'on')
 if strcmp(handles.piState,'In process')
     handles.command = 'Neutral';
     guidata(hObject,handles);
@@ -230,8 +225,11 @@ width  = str2double(strwidth);
 height = str2double(strheight);
 axes(handles.axesImage)
 imshow(rand(height,width,3));
-uistack(handles.axesAccel,'top')
-uistack(handles.axesImage,'bottom')
+if handles.checkboxPiCamera.Value && ...
+    handles.checkboxAccel.Value
+    uistack(handles.axesAccel,'top')
+    uistack(handles.axesImage,'bottom')
+end
 
 % Update handless
 guidata(hObject,handles)
@@ -308,13 +306,11 @@ try
         val = handles.popupmenuAvailableImageEffects.String{idx};
         handles.piAvatar.ImageEffect = val;
         for iter = 1:5
-            step(handles.piAvatar,'Snapshot')
+            handles.piAvatar.step('Snapshot')
         end
         if isempty(handles.axesImage.Children)
             axes(handles.axesImage)
             imshow(handles.piAvatar.img)
-            uistack(handles.axesAccel,'top')
-            uistack(handles.axesImage,'bottom')
         else
             handles.axesImage.Children.CData = handles.piAvatar.img;
         end
@@ -324,17 +320,22 @@ try
             uiobjs(idx).Enalbe = 'off';
         end
     end
+    if handles.checkboxPiCamera.Value && ...
+        handles.checkboxAccel.Value
+        uistack(handles.axesAccel,'top')
+        uistack(handles.axesImage,'bottom')
+    end    
     
     % Update handles
     guidata(hObject,handles)
-catch
+catch ME
     % http://jp.mathworks.com/help/matlab/ref/dialog.html
     d = dialog('Position',[300 300 250 150],...
-        'Name','Warning: pushbuttonConnect_Callback');
+        'Name','Warning: Connection');
     uicontrol('Parent',d,...
         'Style','text',...
         'Position',[20 80 210 40],...
-        'String','Connecton failed. Please retry.');
+        'String',ME.message);
     uicontrol('Parent',d,...
         'Position',[85 20 70 25],...
         'String','OK',...
@@ -342,44 +343,62 @@ catch
     waitfor(d)
 end
 
-
 % --- Executes on button press in pushbuttonDisconnect.
 function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbuttonDisconnect (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-while ~isempty(handles.piAvatar)
+try
+%    while(handles.isPiLocked)
+%        handles = guidata(hObject);
+%    end
+    %
     handles.piAvatar = [];
+    guidata(hObject,handles)
+    %
+    hObject.Enable                                = 'off';
+    handles.pushbuttonConnect.Enable              = 'on';
+    %
+    uiobjs = findobj('UserData','Initialization');
+    for idx = 1:length(uiobjs)
+        uiobjs(idx).Enable = 'on';
+    end
+    if ~handles.checkboxPiCamera.Value
+        handles.checkboxFaceDetection.Enable          = 'off';
+        handles.checkboxHistogramEq.Enable            = 'off';
+        handles.popupmenuAvailableResolutions.Enable  = 'off';
+    end
+    %
+    handles.piState = 'No connection';
+    handles.textNoConnection.Enable               = 'on';
+    handles.textReady.Enable                      = 'off';
+    handles.textInProcess.Enable                  = 'off';
+    %
+    handles.pushbuttonStart.Enable                = 'off';
+    handles.pushbuttonStop.Enable                 = 'off';
+    handles.uppanelControlMonitor.Visible         = 'off';
+    %
+    uiobjs = findobj('UserData','PiConfiguration');
+    for idx = 1:length(uiobjs)
+        uiobjs(idx).Enable = 'off';
+    end
+    
+    % Update handles
+    guidata(hObject,handles)
+catch ME
+    % http://jp.mathworks.com/help/matlab/ref/dialog.html
+    d = dialog('Position',[300 300 250 150],...
+        'Name','Warning: Disconnection');
+    uicontrol('Parent',d,...
+        'Style','text',...
+        'Position',[20 80 210 40],...
+        'String',ME.message);
+    uicontrol('Parent',d,...
+        'Position',[85 20 70 25],...
+        'String','OK',...
+        'Callback','delete(gcf)');
+    waitfor(d)
 end
-hObject.Enable                                = 'off';
-handles.pushbuttonConnect.Enable              = 'on';
-%
-uiobjs = findobj('UserData','Initialization');
-for idx = 1:length(uiobjs)
-    uiobjs(idx).Enable = 'on';
-end
-if ~handles.checkboxPiCamera.Value
-    handles.checkboxFaceDetection.Enable          = 'off';
-    handles.checkboxHistogramEq.Enable            = 'off';    
-    handles.popupmenuAvailableResolutions.Enable  = 'off';
-end
-%
-handles.piState = 'No connection';
-handles.textNoConnection.Enable               = 'on';
-handles.textReady.Enable                      = 'off';
-handles.textInProcess.Enable                  = 'off';
-%
-handles.pushbuttonStart.Enable                = 'off';
-handles.pushbuttonStop.Enable                 = 'off';
-handles.uppanelControlMonitor.Visible         = 'off';
-%
-uiobjs = findobj('UserData','PiConfiguration');
-for idx = 1:length(uiobjs)
-    uiobjs(idx).Enable = 'off';
-end
-
-% Update handles
-guidata(hObject,handles)
 
 % --- Executes on selection change in popupmenuAvailableImageEffects.
 function popupmenuAvailableImageEffects_Callback(hObject, eventdata, handles)
@@ -395,7 +414,7 @@ val = hObject.String{idx};
 handles.piAvatar.ImageEffect = val;
 
 for iter = 1:5
-    step(handles.piAvatar,'Snapshot')
+    handles.piAvatar.step('Snapshot')
 end
 handles.axesImage.Children.CData = handles.piAvatar.img;
 
@@ -428,7 +447,7 @@ release(handles.piAvatar)
 handles.piAvatar.HorizontalFlip = hObject.Value;
 
 for iter = 1:5
-    step(handles.piAvatar,'Snapshot')
+    handles.piAvatar.step('Snapshot')
 end
 handles.axesImage.Children.CData = handles.piAvatar.img;
 
@@ -446,7 +465,7 @@ release(handles.piAvatar)
 handles.piAvatar.VerticalFlip = hObject.Value;
 
 for iter = 1:5
-    step(handles.piAvatar,'Snapshot')
+    handles.piAvatar.step('Snapshot')
 end
 handles.axesImage.Children.CData = handles.piAvatar.img;
 
@@ -469,9 +488,6 @@ handles.pushbuttonDisconnect.Enable           = 'on';
 %
 handles.piState = 'Ready';
 guidata(hObject,handles);
-% handles = guidata(hObject);
-% while(handles.isPiLocked)
-% end
 %
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'on';
@@ -493,12 +509,12 @@ for idx = 1:length(uiobjs)
 end
 
 % Turn off LEDs
-step(handles.piAvatar,'Led1Off')
-step(handles.piAvatar,'Led2Off')
+handles.piAvatar.step('Led1Off')
+handles.piAvatar.step('Led2Off')
 
 % Release piAvatar
-pause(0.1)
-release(handles.piAvatar)
+%pause(0.1)
+%release(handles.piAvatar)
 
 % Update handles
 guidata(hObject,handles)
@@ -536,34 +552,37 @@ guidata(hObject,handles)
 % Control PiAvatar
 axes(handles.axesImage)
 precommand = 'Neutral';
-step(handles.piAvatar,'Neutral')
+handles.piAvatar.step('Neutral')
 while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
+    %handles.isPiLocked = true;
+    %guidata(hObject,handles)    
+    %
     curcommand = handles.command;
     try
         if strcmp(curcommand,precommand)
             if handles.checkboxAccel.Value
-                step(handles.piAvatar,'Acceleration')
+                handles.piAvatar.step('Acceleration')
             end
             if handles.checkboxPiCamera.Value
-                step(handles.piAvatar,'Snapshot')
+                handles.piAvatar.step('Snapshot')
             end
             if handles.tglLed1 && strcmp(handles.textLed1.Enable,'off')
                 handles.textLed1.Enable = 'on';
-                step(handles.piAvatar,'Led1On')
+                handles.piAvatar.step('Led1On')
             elseif ~handles.tglLed1 && strcmp(handles.textLed1.Enable,'on')
                 handles.textLed1.Enable = 'off';                    
-                step(handles.piAvatar,'Led1Off')
+                handles.piAvatar.step('Led1Off')
             end
             if handles.tglLed2 && strcmp(handles.textLed2.Enable,'off')
                 handles.textLed2.Enable = 'on';
-                step(handles.piAvatar,'Led2On')
+                handles.piAvatar.step('Led2On')
             elseif ~handles.tglLed2 && strcmp(handles.textLed2.Enable,'on')
                 handles.textLed2.Enable = 'off';
-                step(handles.piAvatar,'Led2Off')
+                handles.piAvatar.step('Led2Off')
             end            
         else
-            step(handles.piAvatar,curcommand)
+            handles.piAvatar.step(curcommand)
             handles.textUparrow.Enable    = 'off';
             handles.textDownarrow.Enable  = 'off';
             handles.textLeftarrow.Enable  = 'off';
@@ -589,7 +608,6 @@ while(strcmp(handles.piState,'In process'))
                 img_ = handles.piAvatar.img;
                 % 画像表示
                 handles.axesImage.Children.CData = img_;
-                uistack(handles.axesImage,'bottom')
             end
             if handles.checkboxAccel.Value
                 % 加速度取得
@@ -597,23 +615,29 @@ while(strcmp(handles.piState,'In process'))
                 % 加速度表示
                 step(handles.agHandle,axl_);
             end
+            if handles.checkboxPiCamera.Value && ...
+                    handles.checkboxAccel.Value
+                uistack(handles.axesImage,'bottom')
+                uistack(handles.axesAccel,'top')
+            end                
         end
-    catch
+        %handles = guidata(hObject);        
+        %handles.isPiLocked = false;
+        %guidata(hObject,handles)            
+    catch ME
         % http://jp.mathworks.com/help/matlab/ref/dialog.html
         d = dialog('Position',[300 300 250 150],...
-            'Name','Warning: pushbuttonStart_Callback');
+            'Name','Warning: Start');
         uicontrol('Parent',d,...
             'Style','text',...
             'Position',[20 80 210 40],...
-            'String','Communication has failed.');
+            'String',ME.message);
         uicontrol('Parent',d,...
             'Position',[85 20 70 25],...
             'String','OK',...
             'Callback','delete(gcf)');
         waitfor(d)
     end
-    %handles.isPiLocked = false;
-    %guidata(hObject,handles);    
 end
 
 % --- Executes on button press in checkboxPiCamera.
