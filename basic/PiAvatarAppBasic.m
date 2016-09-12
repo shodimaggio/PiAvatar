@@ -1,11 +1,11 @@
-function vargout = PiAvatarAppBasic(varargin)
-%PIAVATARAPP （簡易版）PiAvatarAppBasic.fig 用のMATLAB コードファイル
-% GUIDE 生成初期化コード（編集不可）
+function varargout = PiAvatarAppBasic(varargin)
+%PIAVATARAPPBASIC PiAvatarAppBasic.fig 用MATLAB コード
+%GUIDE 生成初期化コード（編集不可）
 gui_Singleton = 1;
 gui_State = struct('gui_Name',  mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @PiAvatarAppBasic_OpeningFcn, ...
-    'gui_OutputFcn',  @PiAvatarAppBasic_OutputFcn, ...
+    'gui_OpeningFcn', @PiAvatarApp_OpeningFcn, ...
+    'gui_OutputFcn',  @PiAvatarApp_OutputFcn, ...
     'gui_LayoutFcn',  [], ...
     'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -17,19 +17,20 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
       
-function PiAvatarAppBasic_OpeningFcn(hObject, eventdata, handles, varargin)
-% 関数間の共有情報を保持する構造体データ handles を初期化
+function PiAvatarApp_OpeningFcn(hObject, ~, handles, varargin)
+% GUI初期化関数
 handles.piAvatar = [];              % PiAvatar参照
 handles.piState  = 'No connection'; % 状態初期化
 handles.command  = 'Neutral';       % コマンド初期化
 handles.output = hObject;
 guidata(hObject, handles);          % GUIオブジェクトの更新
 
-function varargout = PiAvatarAppBasic_OutputFcn(hObject, eventdata, handles)
+function varargout = PiAvatarApp_OutputFcn(hObject, ~, handles)
+% GUI出力関数
 varargout{1} = handles.output;
 
-function pushbuttonConnect_Callback(hObject, eventdata, handles)
-% PiAvatar機体との接続と状態の更新
+function pushbuttonConnect_Callback(hObject, ~, handles)
+% Connect ボタンのコールバック関数
 ipAddress        = handles.editIpAddress.String;
 handles.piAvatar = PiAvatarBasic('IpAddress',ipAddress);
 handles.piState  = 'Ready';
@@ -40,20 +41,18 @@ handles.pushbuttonStart.Enable      = 'on';
 for iter = 1:5 % カメラ設定を反映するためのアイドリング
    handles.piAvatar.step('Snapshot')
 end     
-% 画像表示の初期化	      
-axes(handles.axesImage)
+axes(handles.axesImage)       % 画像表示の初期化	       
 imshow(handles.piAvatar.img)
-% GUIオブジェクトの更新
-guidata(hObject,handles) 
+guidata(hObject,handles);     % GUIオブジェクトの更新
 
 function figure1_KeyPressFcn(hObject, eventdata, handles)
-%   
+% キー押下時のコールバック関数 
 if strcmp(handles.piState,'In process')
     switch(eventdata.Key)
         case 'uparrow'
             handles.command = 'Forward';
         case 'downarrow'
-            handles.command = 'Reverse';
+            handles.command = 'Reve rse';
         case 'leftarrow'
             handles.command = 'Turn left';
         case 'rightarrow'
@@ -61,24 +60,23 @@ if strcmp(handles.piState,'In process')
         case 'space'
             handles.command = 'Brake';
     end
-    guidata(hObject,handles);
+    guidata(hObject,handles); % GUIオブジェクトの更新
 end
 
-function figure1_KeyReleaseFcn(hObject, eventdata, handles)
-% 
+function figure1_KeyReleaseFcn(hObject, ~, handles)
+% キー解放時のコールバック関数 
 if strcmp(handles.piState,'In process')
     handles.command = 'Neutral';
-    guidata(hObject,handles);
+    guidata(hObject,handles); % GUIオブジェクトの更新
 end
 
-function pushbuttonStart_Callback(hObject, eventdata, handles)
-% 
+function pushbuttonStart_Callback(hObject, ~, handles)
+% Start ボタンのコールバック関数
 handles.piState = 'In process';
 handles.pushbuttonStart.Enable       = 'off';
 handles.pushbuttonStop.Enable        = 'on';
 handles.pushbuttonDisconnect.Enable  = 'off';
-guidata(hObject,handles)
-
+guidata(hObject,handles); % GUIオブジェクトの更新
 % PiAvatarの制御
 precommand = 'Neutral';
 handles.piAvatar.step('Neutral')
@@ -91,34 +89,35 @@ while(strcmp(handles.piState,'In process'))
         handles.piAvatar.step(curcommand)
         precommand = curcommand;
     end
-    % 画像表示更新
+    % 表示画像の更新
     img_ = handles.piAvatar.img;
     handles.axesImage.Children.CData = img_;
 end
 
-function pushbuttonStop_Callback(hObject, eventdata, handles)
-% 
+function pushbuttonStop_Callback(hObject, ~, handles)
+% Stop ボタンのコールバック関数
 handles.piState = 'Ready';
 handles.command = 'Neutral';
 handles.pushbuttonStop.Enable       = 'off';
 handles.pushbuttonStart.Enable      = 'on';
 handles.pushbuttonDisconnect.Enable = 'on';
-guidata(hObject,handles);
+guidata(hObject,handles); % GUIオブジェクトの更新
 
-function pushbuttonDisconnect_Callback(hObject, eventdata, handles)
-%
+function pushbuttonDisconnect_Callback(hObject, ~, handles)
+% Disconnect ボタンのコールバック関数
 handles.piAvatar = [];
 handles.piState = 'No connection';
 handles.pushbuttonDisconnect.Enable = 'off';
 handles.pushbuttonConnect.Enable    = 'on';
 handles.pushbuttonStart.Enable      = 'off';
-guidata(hObject,handles)
+guidata(hObject,handles); % GUIオブジェクトの更新
 
-function editIpAddress_Callback(hObject, eventdata, handles)
-%
+function editIpAddress_Callback(hObject, ~, handles)
+% IpAddressテキスト入力のコールバック関数
 
-function editIpAddress_CreateFcn(hObject, eventdata, handles)
-%
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+function editIpAddress_CreateFcn(hObject, ~, handles)
+% IpAddressテキスト入力の生成関数
+if ispc && isequal(get(hObject,'BackgroundColor'), ...
+		   get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
