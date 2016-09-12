@@ -308,12 +308,12 @@ try
         for iter = 1:5
             handles.piAvatar.step('Snapshot')
         end
-        if isempty(handles.axesImage.Children)
+        %if isempty(handles.axesImage.Children)
             axes(handles.axesImage)
             imshow(handles.piAvatar.img)
-        else
-            handles.axesImage.Children.CData = handles.piAvatar.img;
-        end
+        %else
+        %    handles.axesImage.Children.CData = handles.piAvatar.img;
+        %end
     else
         uiobjs = findobj('UserData','PiConfiguration');        
         for idx = 1:length(uiobjs)
@@ -555,8 +555,6 @@ precommand = 'Neutral';
 handles.piAvatar.step('Neutral')
 while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
-    %handles.isPiLocked = true;
-    %guidata(hObject,handles)    
     %
     curcommand = handles.command;
     try
@@ -621,11 +619,9 @@ while(strcmp(handles.piState,'In process'))
                 uistack(handles.axesAccel,'top')
             end                
         end
-        %handles = guidata(hObject);        
-        %handles.isPiLocked = false;
-        %guidata(hObject,handles)            
     catch ME
         % http://jp.mathworks.com/help/matlab/ref/dialog.html
+        %
         d = dialog('Position',[300 300 250 150],...
             'Name','Warning: Start');
         uicontrol('Parent',d,...

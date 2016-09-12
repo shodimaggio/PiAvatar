@@ -59,16 +59,16 @@ classdef PiAvatar < matlab.System
             obj.rpi = raspi(obj.IpAddress,obj.Id,obj.Password);
             
             % ディジタル出力端子(GPIO)初期化
-            configurePin(obj.rpi, obj.Motor1In1Pin, 'DigitalOutput');
-            configurePin(obj.rpi, obj.Motor1In2Pin, 'DigitalOutput');
-            configurePin(obj.rpi, obj.Motor2In1Pin, 'DigitalOutput');
-            configurePin(obj.rpi, obj.Motor2In2Pin, 'DigitalOutput');
-            configurePin(obj.rpi, obj.Led1Pin,      'DigitalOutput');
-            configurePin(obj.rpi, obj.Led2Pin,      'DigitalOutput');
+            obj.rpi.configurePin(obj.Motor1In1Pin, 'DigitalOutput');
+            obj.rpi.configurePin(obj.Motor1In2Pin, 'DigitalOutput');
+            obj.rpi.configurePin(obj.Motor2In1Pin, 'DigitalOutput');
+            obj.rpi.configurePin(obj.Motor2In2Pin, 'DigitalOutput');
+            obj.rpi.configurePin(obj.Led1Pin,      'DigitalOutput');
+            obj.rpi.configurePin(obj.Led2Pin,      'DigitalOutput');
             
             % PiCamera 初期化
             if obj.PiCamera
-                obj.cam = cameraboard(obj.rpi,'Resolution',obj.Resolution);
+                obj.cam = obj.rpi.cameraboard('Resolution',obj.Resolution);
                 % 顔検出器の初期化
                 if obj.FaceDetection && ...
                         exist('vision.CascadeObjectDetector','class')==8
@@ -79,11 +79,11 @@ classdef PiAvatar < matlab.System
             end
             
             % 加速度センサー(SPI) 初期化
-            obj.l3d = spidev(obj.rpi,obj.SpiCs,obj.SpiMode,obj.SpiSpeed);
+            obj.l3d = obj.rpi.spidev(obj.SpiCs,obj.SpiMode,obj.SpiSpeed);
             
             % サーボモータ(GPIO)の動作を停止
-            configurePin(obj.rpi, obj.Pwm0Pin, 'DigitalOutput');
-            writeDigitalPin(obj.rpi, obj.Pwm0Pin, 0);
+            obj.rpi.configurePin(obj.Pwm0Pin, 'DigitalOutput');
+            obj.rpi.writeDigitalPin(obj.Pwm0Pin, 0);
         end
     end
     
@@ -101,42 +101,42 @@ classdef PiAvatar < matlab.System
             
             switch(command)
                 case 'Forward'
-                    forward_(obj)
+                    obj.forward_()
                 case 'Reverse'
-                    reverse_(obj)
+                    obj.reverse_()
                 case 'Turn right'
-                    turnRight_(obj)
+                    obj.turnRight_()
                 case 'Turn left'
-                    turnLeft_(obj)
+                    obj.turnLeft_()
                 case 'Brake'
-                    brake_(obj)
+                    obj.brake_()
                 case 'Neutral'
-                    neutral_(obj)
+                    obj.neutral_()
                 case 'Led1On'
-                    ledon_(obj,1)
+                    obj.ledon_(1)
                 case 'Led1Off'
-                    ledoff_(obj,1)
+                    obj.ledoff_(1)
                 case 'Led2On'
-                    ledon_(obj,2)
+                    obj.ledon_(2)
                 case 'Led2Off'
-                    ledoff_(obj,2)
+                    obj.ledoff_(2)
                 case 'Snapshot'
                     if obj.PiCamera
-                        img_ = snapshot(obj.cam);
+                        img_ = obj.cam.snapshot();
                         if obj.HistogramEq   % ヒストグラム均等化
                             img_ = rgb2hsv(img_);
                             img_(:,:,3) = histeq(img_(:,:,3));
                             img_ = hsv2rgb(img_);
                         end                        
                         if obj.FaceDetection % 顔検出
-                            bboxes = step(obj.fcd, img_);
+                            bboxes = obj.fcd.step(img_);
                             img_ = insertObjectAnnotation(img_, ...
                                 'rectangle', bboxes, 'Face');
                         end
                         obj.img = img_;
                     end
                 case 'Acceleration'
-                    obj.axl = l3dxyzread_(obj);
+                    obj.axl = obj.l3dxyzread_();
                 otherwise
                     me = MException('PiAvatar:InvalidCommand',...
                         'Command "%s" is not supported.', command);
@@ -148,69 +148,69 @@ classdef PiAvatar < matlab.System
     methods(Access = private)
         
         function forward_(obj) % 前進
-            writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 0);
         end
         
         function reverse_(obj) % 後退
-            writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 1);
         end
         
         function turnRight_(obj) % 右旋回
-            writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 0);
         end
         
         function turnLeft_(obj) % 左旋回
-            writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 1);
         end
         
         function brake_(obj) % ブレーキ
-            writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 1);
-            writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 1);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 1);
         end
         
         function neutral_(obj) % ニュートラル
-            writeDigitalPin(obj.rpi, obj.Motor1In1Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor1In2Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor2In1Pin, 0);
-            writeDigitalPin(obj.rpi, obj.Motor2In2Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 0);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 0);
         end
         
         function ledon_(obj,ledNumber)
             % LED 点灯
             if ledNumber == 1     % 白色LED
-                writeDigitalPin(obj.rpi, obj.Led1Pin, 1);
+                obj.rpi.writeDigitalPin(obj.Led1Pin, 1);
             elseif ledNumber == 2 % 赤外線LED
-                writeDigitalPin(obj.rpi, obj.Led2Pin, 1);
+                obj.rpi.writeDigitalPin(obj.Led2Pin, 1);
             end
         end
         
         function ledoff_(obj,ledNumber)
             % LED 消灯
             if ledNumber == 1     % 白色LED
-                writeDigitalPin(obj.rpi, obj.Led1Pin, 0);
+                obj.rpi.writeDigitalPin(obj.Led1Pin, 0);
             elseif ledNumber == 2 % 赤外線LED
-                writeDigitalPin(obj.rpi, obj.Led2Pin, 0);
+                obj.rpi.writeDigitalPin(obj.Led2Pin, 0);
             end
         end
         
         function l3dsetup_(obj)
             adCtrlReg1 = hex2dec('20'); % CTRL_REG1
             diCtrlReg1 = hex2dec('7F');
-            writeRead(obj.l3d,[adCtrlReg1 diCtrlReg1]);
+            obj.l3d.writeRead([adCtrlReg1 diCtrlReg1]);
         end
         
         function axl = l3dxyzread_(obj)
@@ -221,7 +221,7 @@ classdef PiAvatar < matlab.System
             spiCom  = bitor(rwBit, msBit,  'uint8');
             spiCom  = bitor(spiCom,adOutXl,'uint8');
             spiCom  = [ spiCom repmat(hex2dec('00'),1,12) ];
-            dat     = writeRead(obj.l3d,spiCom);
+            dat     = obj.l3d.writeRead(spiCom);
             xl = dat(3);
             xh = dat(5);
             x = obj.convdata_(xh,xl);
