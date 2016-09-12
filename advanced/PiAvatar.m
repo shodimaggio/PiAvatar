@@ -148,46 +148,44 @@ classdef PiAvatar < matlab.System
     methods(Access = private)
         
         function forward_(obj) % 前進
-            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 0);
+            obj.motor1_(1,0);
+            obj.motor2_(1,0);
         end
+
+        function neutral_(obj) % ニュートラル
+            obj.motor1_(0,0);
+            obj.motor2_(0,0);
+        end	
         
         function reverse_(obj) % 後退
-            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 1);
-        end
+            obj.motor1_(0,1);
+            obj.motor2_(0,1);
+        end	
         
         function turnRight_(obj) % 右旋回
-            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 0);
-        end
+            obj.motor1_(0,1);
+            obj.motor2_(1,0);
+        end	
         
         function turnLeft_(obj) % 左旋回
-            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 1);
-        end
+            obj.motor1_(1,0);
+            obj.motor2_(0,1);
+        end	
         
         function brake_(obj) % ブレーキ
-            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 1);
-            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 1);
-        end
+            obj.motor1_(1,1);
+            obj.motor2_(1,1);
+        end	
         
-        function neutral_(obj) % ニュートラル
-            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, 0);
-            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, 0);
-        end
+        function motor1_(obj,in1,in2) % DCモータ1
+            obj.rpi.writeDigitalPin(obj.Motor1In1Pin, in1);
+            obj.rpi.writeDigitalPin(obj.Motor1In2Pin, in2);
+        end	
+        
+        function motor2_(obj,in1,in2)  % DCモータ2
+            obj.rpi.writeDigitalPin(obj.Motor2In1Pin, in1);
+            obj.rpi.writeDigitalPin(obj.Motor2In2Pin, in2);
+        end	   
         
         function ledon_(obj,ledNumber)
             % LED 点灯
