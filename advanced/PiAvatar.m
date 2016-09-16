@@ -22,7 +22,7 @@ classdef PiAvatar < matlab.System
         Motor2In2Pin   = 26
         Led1Pin        = 24
         Led2Pin        = 23
-        PiCamera       = false
+        PiCamera       = true
         Resolution     = '640x480'
         ImageEffect    = 'none'
         HorizontalFlip = false
@@ -72,7 +72,7 @@ classdef PiAvatar < matlab.System
                 % 顔検出器の初期化
                 if obj.FaceDetection && ...
                         exist('vision.CascadeObjectDetector','class')==8
-                    obj.fcd = vision.CascadeObjectDetector;
+                    obj.fcd = vision.CascadeObjectDetector();
                 end
             else
                 obj.FaceDetection = false;
@@ -136,7 +136,7 @@ classdef PiAvatar < matlab.System
                         obj.img = img_;
                     end
                 case 'Acceleration'
-                    obj.axl = obj.l3dxyzread_();
+                    obj.axl = obj.l3dxyzread_() .* [ 1 -1 -1 ];
                 otherwise
                     me = MException('PiAvatar:InvalidCommand',...
                         'Command "%s" is not supported.', command);
@@ -230,7 +230,7 @@ classdef PiAvatar < matlab.System
             zh = dat(13);
             z = obj.convdata_(zh,zl);
             %
-            axl = double([ x -y -z ])/(16*1024); % 重力加速度で正規化
+            axl = double([ x y z ])/(16*1024); % 重力加速度で正規化
         end
         
     end

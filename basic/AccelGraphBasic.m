@@ -1,9 +1,14 @@
-classdef AccelGraph < matlab.System
+classdef AccelGraphBasic < matlab.System
     % ACCELGRAPH（簡易版）
     
     properties (Nontunable)
         AxesHandle
         NumberOfPlots = 4
+        CameraPosition = [ 0 0 -8 ]
+        CameraTarget   = [ 0 0 0 ]
+        XDir           = 'normal'      
+        YDir           = 'normal'
+        ZDir           = 'normal'
     end
 
     properties (Hidden)
@@ -17,7 +22,7 @@ classdef AccelGraph < matlab.System
     
     methods
         % コンストラクタ
-        function obj = AccelGraph(varargin)
+        function obj = AccelGraphBasic(varargin)
             setProperties(obj,nargin,varargin{:});
             obj.seq = zeros(3,obj.NumberOfPlots);
         end
@@ -42,27 +47,28 @@ classdef AccelGraph < matlab.System
             obj.sch.MarkerEdgeColor = 'c';
             obj.sch.MarkerFaceColor = 'm';
             %
-            obj.AxesHandle.CameraPosition      = [ 0 0 -8 ];
-            obj.AxesHandle.CameraTarget        = [ 0 0 0 ];
+            obj.AxesHandle.CameraPosition      = obj.CameraPosition;
+            obj.AxesHandle.CameraTarget        = obj.CameraTarget;
             obj.AxesHandle.CameraViewAngle     = 0;
             obj.AxesHandle.Projection          = 'perspective';
             obj.AxesHandle.Color               = 'none';            
             obj.AxesHandle.XLim                = [ -2 2 ];
             obj.AxesHandle.YLim                = [ -2 2 ];
             obj.AxesHandle.ZLim                = [ -2 2 ];            
+            obj.AxesHandle.XDir                = obj.XDir;
+            obj.AxesHandle.YDir                = obj.YDir;
+            obj.AxesHandle.ZDir                = obj.ZDir;
             % その他、各種設定
         end
         
         function stepImpl(obj,u)
-            obj.Count = obj.Count+1;
-            obj.Count = mod(obj.Count-1,obj.NumberOfPlots)+1;
+            obj.Count = obj.Count+1; % 周期的にサンプル数をカウント
+            obj.Count = mod(obj.Count-1,obj.NumberOfPlots)+1; 
             obj.seq(:,obj.Count) = u(:);
-            data = mean(obj.seq,2);
-            obj.sch.XData(obj.Count) = data(1);
+            data = mean(obj.seq,2);  % 過去NumberOfPlots点数分の平均
+            obj.sch.XData(obj.Count) = data(1); % プロット表示を更新
             obj.sch.YData(obj.Count) = data(2);
             obj.sch.ZData(obj.Count) = data(3);
         end
-        
     end
-    
 end

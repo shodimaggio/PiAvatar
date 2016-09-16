@@ -13,6 +13,11 @@ classdef AccelGraph < matlab.System
     properties (Nontunable)
         AxesHandle
         NumberOfPlots = 4
+        CameraPosition = [ 0 0 -8 ]
+        CameraTarget   = [ 0 0 0 ]
+        XDir           = 'normal'      
+        YDir           = 'normal'
+        ZDir           = 'normal'
     end
 
     properties 
@@ -58,9 +63,9 @@ classdef AccelGraph < matlab.System
             obj.sch.MarkerEdgeColor = 'c';
             obj.sch.MarkerFaceColor = 'm';
             %
-            obj.AxesHandle.CameraPosition      = [ 0 0 -8 ];
+            obj.AxesHandle.CameraPosition      = obj.CameraPosition; 
             obj.AxesHandle.CameraPositionMode  = 'manual';
-            obj.AxesHandle.CameraTarget        = [ 0 0 0 ];
+            obj.AxesHandle.CameraTarget        = obj.CameraTarget;
             obj.AxesHandle.CameraTargetMode    = 'manual';
             obj.AxesHandle.CameraUpVectorMode  = 'auto';
             obj.AxesHandle.CameraViewAngle     = 0;
@@ -69,13 +74,13 @@ classdef AccelGraph < matlab.System
             obj.AxesHandle.Color               = 'none';
             obj.AxesHandle.XLim                = [ -2 2 ];
             obj.AxesHandle.XTick               = -2:2;
-            obj.AxesHandle.XDir                = 'normal';
+            obj.AxesHandle.XDir                = obj.XDir;
             obj.AxesHandle.YLim                = [ -2 2 ];
             obj.AxesHandle.YTick               = -2:2;
-            obj.AxesHandle.YDir                = 'normal';            
+            obj.AxesHandle.YDir                = obj.YDir;
             obj.AxesHandle.ZLim                = [ -2 2 ];
             obj.AxesHandle.ZTick               = -2:2;
-            obj.AxesHandle.ZDir                = 'normal';            
+            obj.AxesHandle.ZDir                = obj.ZDir;
             obj.AxesHandle.Box                 = 'off';
             obj.AxesHandle.XColor              = [ 0 1 0 ];
             obj.AxesHandle.YColor              = [ 0 1 0 ];

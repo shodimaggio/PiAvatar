@@ -52,7 +52,7 @@ if strcmp(handles.piState,'In process')
         case 'uparrow'
             handles.command = 'Forward';
         case 'downarrow'
-            handles.command = 'Reve rse';
+            handles.command = 'Reverse';
         case 'leftarrow'
             handles.command = 'Turn left';
         case 'rightarrow'
