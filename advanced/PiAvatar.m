@@ -23,6 +23,7 @@ classdef PiAvatar < matlab.System
         Led1Pin        = 24
         Led2Pin        = 23
         PiCamera       = true
+        ServoMotor     = false
         Resolution     = '640x480'
         ImageEffect    = 'none'
         HorizontalFlip = false
@@ -47,6 +48,9 @@ classdef PiAvatar < matlab.System
         fcd
         img
         axl
+        srv
+        att
+        sva
     end
     
     methods
@@ -81,9 +85,16 @@ classdef PiAvatar < matlab.System
             % 加速度センサー(SPI) 初期化
             obj.l3d = obj.rpi.spidev(obj.SpiCs,obj.SpiMode,obj.SpiSpeed);
             
-            % サーボモータ(GPIO)の動作を停止
-            obj.rpi.configurePin(obj.Pwm0Pin, 'DigitalOutput');
-            obj.rpi.writeDigitalPin(obj.Pwm0Pin, 0);
+            % サーボモータの設定
+            if obj.ServoMotor
+                obj.srv = obj.rpi.servo(obj.Pwm0Pin,...
+                    'MaxPulseDuration',2e-3,...
+                    'MinPulseDuration',7e-4);
+            else
+                obj.rpi.configurePin(obj.Pwm0Pin, 'DigitalOutput');
+                obj.rpi.writeDigitalPin(obj.Pwm0Pin, 0);
+                obj.srv = [];
+            end
         end
     end
     
@@ -95,6 +106,12 @@ classdef PiAvatar < matlab.System
             obj.cam.VerticalFlip   = obj.VerticalFlip;
             %
             l3dsetup_(obj);
+            %
+            if obj.ServoMotor
+                obj.att = 90;
+                obj.sva = 0;                
+                obj.srv.writePosition(obj.att);
+            end
         end
         
         function stepImpl(obj,command)
@@ -135,8 +152,33 @@ classdef PiAvatar < matlab.System
                         end
                         obj.img = img_;
                     end
-                case 'Acceleration'
+                case 'Accelerometer'
                     obj.axl = obj.l3dxyzread_() .* [ 1 -1 -1 ];
+                case 'Tilt Up'
+                    if obj.ServoMotor
+                       obj.sva = obj.sva - 1;
+                       obj.srv.writePosition(obj.att+obj.sva);
+                    end
+                case 'Tilt Down'
+                    if obj.ServoMotor
+                       obj.sva = obj.sva + 1;
+                       obj.srv.writePosition(obj.att+obj.sva);
+                    end
+              case 'Tilt Track'
+                    if obj.ServoMotor
+                       ang_ = obj.axl2ang_(obj.axl);
+                       obj.att = 0.5*obj.att + 0.5*ang_;
+                       disp(obj.att)
+                       %
+                       obj.srv.writePosition(obj.att);
+                    end                      
+                case 'Tilt Reset'
+                    if obj.ServoMotor
+                       ang_ = obj.axl2ang_(obj.axl);
+                       obj.att = ang_;
+                       %
+                       obj.srv.writePosition(obj.att);
+                    end                    
                 otherwise
                     me = MException('PiAvatar:InvalidCommand',...
                         'Command "%s" is not supported.', command);
@@ -242,6 +284,13 @@ classdef PiAvatar < matlab.System
                 out = out - 2*hex2dec('8000'); % 負値への変換
             end
         end
+        
+        function ang = axl2ang_(axl)
+            y_ = axl(2);
+            z_ = axl(3);
+            ang = max(90,min(270,mod(atan2d(y_,z_)+90,360)))-90;
+        end
+
     end
     
 end
