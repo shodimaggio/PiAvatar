@@ -321,7 +321,7 @@ try
     else
         uiobjs = findobj('UserData','PiConfiguration');        
         for idx = 1:length(uiobjs)
-            uiobjs(idx).Enalbe = 'off';
+            uiobjs(idx).Enable = 'off';
         end
     end
     if handles.checkboxPiCamera.Value && ...
@@ -564,7 +564,7 @@ while(strcmp(handles.piState,'In process'))
     try
         if strcmp(curcommand,precommand)
             if handles.checkboxAccel.Value
-                handles.piAvatar.step('Acceleration')
+                handles.piAvatar.step('Accelerometer')
             end
             if handles.checkboxPiCamera.Value
                 handles.piAvatar.step('Snapshot')
@@ -610,18 +610,15 @@ while(strcmp(handles.piState,'In process'))
                 img_ = handles.piAvatar.img;
                 % 画像表示
                 handles.axesImage.Children.CData = img_;
+                uistack(handles.axesImage,'bottom')
             end
             if handles.checkboxAccel.Value
                 % 加速度取得
                 axl_ = handles.piAvatar.axl;
                 % 加速度表示
                 step(handles.agHandle,axl_);
+                uistack(handles.axesAccel,'top')                
             end
-            if handles.checkboxPiCamera.Value && ...
-                    handles.checkboxAccel.Value
-                uistack(handles.axesImage,'bottom')
-                uistack(handles.axesAccel,'top')
-            end                
         end
     catch ME
         % http://jp.mathworks.com/help/matlab/ref/dialog.html
@@ -673,14 +670,17 @@ function checkboxAccel_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxAccel
+release(handles.agHandle)
 if hObject.Value
-    release(handles.agHandle)
     step(handles.agHandle,[0 0 0])
     handles.axesAccel.Visible = 'on';
 else
     handles.axesAccel.Visible = 'off';
+    children_ = handles.axesAccel.Children;
+    for idx  = 1:length(children_)
+        children_(idx).Visible = 'off';
+    end
 end
-
 
 % --- Executes on button press in checkboxHistogramEq.
 function checkboxHistogramEq_Callback(hObject, eventdata, handles)
