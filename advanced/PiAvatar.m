@@ -112,7 +112,7 @@ classdef PiAvatar < matlab.System
                 obj.sva = 0;                
                 obj.srv.writePosition(obj.att);
             else
-                obj.rpi.system('sudo python /home/pi/servoclear.py')
+                obj.rpi.system('sudo python /home/pi/servoclear.py');
             end
         end
         
