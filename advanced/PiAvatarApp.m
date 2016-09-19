@@ -266,6 +266,12 @@ piCamera      = handles.checkboxPiCamera.Value;
 faceDetection = handles.checkboxFaceDetection.Value;
 histogramEq   = handles.checkboxHistogramEq.Value;
 
+if verLessThan('matlab','9.1')
+    servoMotor = false;
+else 
+    servoMotor = true;
+end
+
 idx          = handles.popupmenuAvailableResolutions.Value;
 res          = handles.popupmenuAvailableResolutions.String{idx};
 [swidth,res] = strtok(res,'x');
@@ -281,8 +287,9 @@ try
         'Resolution',sprintf('%dx%d',width,height),...
         'PiCamera',piCamera,...
         'FaceDetection',faceDetection,...
-        'HistogramEq',histogramEq);
-    
+        'HistogramEq',histogramEq,...
+        'ServoMotor',servoMotor);
+
     % Update GUI
     hObject.Enable = 'off';
     handles.pushbuttonDisconnect.Enable           = 'on';
@@ -412,10 +419,10 @@ function popupmenuAvailableImageEffects_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenuAvailableImageEffects contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenuAvailableImageEffects
-release(handles.piAvatar)
 idx = hObject.Value;
 val = hObject.String{idx};
 handles.piAvatar.ImageEffect = val;
+handles.piAvatar.setup('');
 
 for iter = 1:5
     handles.piAvatar.step('Snapshot')
@@ -447,8 +454,9 @@ function checkboxHorizontalFlip_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxHorizontalFlip
-release(handles.piAvatar)
-handles.piAvatar.HorizontalFlip = hObject.Value;
+%release(handles.piAvatar)
+handles.piAvatar.HorizontalFlip = logical(hObject.Value);
+handles.piAvatar.setup('');
 
 for iter = 1:5
     handles.piAvatar.step('Snapshot')
@@ -465,8 +473,9 @@ function checkboxVerticalFlip_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxVerticalFlip
-release(handles.piAvatar)
-handles.piAvatar.VerticalFlip = hObject.Value;
+%release(handles.piAvatar)
+handles.piAvatar.VerticalFlip = logical(hObject.Value);
+handles.piAvatar.setup('');
 
 for iter = 1:5
     handles.piAvatar.step('Snapshot')
@@ -513,12 +522,12 @@ for idx = 1:length(uiobjs)
 end
 
 % Turn off LEDs
+handles.textLed1.Enable = 'off';
+handles.tglLed1 = false;
 handles.piAvatar.step('Led1Off')
+handles.textLed2.Enable = 'off';
+handles.tglLed2 = false;
 handles.piAvatar.step('Led2Off')
-
-% Release piAvatar
-%pause(0.1)
-%release(handles.piAvatar)
 
 % Update handles
 guidata(hObject,handles)
@@ -670,7 +679,6 @@ function checkboxAccel_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkboxAccel
-release(handles.agHandle)
 if hObject.Value
     step(handles.agHandle,[0 0 0])
     handles.axesAccel.Visible = 'on';

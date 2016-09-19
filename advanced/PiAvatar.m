@@ -23,11 +23,8 @@ classdef PiAvatar < matlab.System
         Led1Pin        = 24
         Led2Pin        = 23
         PiCamera       = true
-        ServoMotor     = false
+        ServoMotor     = true
         Resolution     = '640x480'
-        ImageEffect    = 'none'
-        HorizontalFlip = false
-        VerticalFlip   = false
         FaceDetection  = false
         SpiCs          = 'CE0'
         SpiMode        = 0
@@ -35,6 +32,9 @@ classdef PiAvatar < matlab.System
     end
     
     properties
+        ImageEffect    = 'none'
+        HorizontalFlip = false
+        VerticalFlip   = false
         HistogramEq    = false
     end
     
@@ -111,11 +111,13 @@ classdef PiAvatar < matlab.System
                 obj.att = 90;
                 obj.sva = 0;                
                 obj.srv.writePosition(obj.att);
+            else
+                obj.rpi.system('sudo python /home/pi/servoclear.py')
             end
         end
         
         function stepImpl(obj,command)
-            
+            %
             switch(command)
                 case 'Forward'
                     obj.forward_()
@@ -184,6 +186,9 @@ classdef PiAvatar < matlab.System
                         'Command "%s" is not supported.', command);
                     throw(me);
             end
+            
+            %function resetImpl(obj)
+            %end
         end
     end
     
