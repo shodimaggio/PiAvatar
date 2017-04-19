@@ -1,1 +1,5 @@
 # PiAvatar
+
+## Hardware
+
+## Software
