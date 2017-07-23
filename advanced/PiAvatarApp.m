@@ -130,6 +130,12 @@ if strcmp(handles.piState,'In process')
                 handles.command = 'Led2On';
                 handles.tglLed2 = true;
             end
+        case 'q'
+            handles.command = 'Tilt Up';
+        case 'a'
+            handles.command = 'Tilt Reset';
+        case 'z'
+            handles.command = 'Tilt Down';
     end
     guidata(hObject,handles);
     
@@ -592,6 +598,9 @@ while(strcmp(handles.piState,'In process'))
                 handles.textLed2.Enable = 'off';
                 handles.piAvatar.step('Led2Off')
             end            
+            if strcmp(handles.command(1:4),'Tilt')
+                handles.piAvatar.step(curcommand)
+            end                        
         else
             handles.piAvatar.step(curcommand)
             handles.textUparrow.Enable    = 'off';
