@@ -76,7 +76,8 @@ classdef PiAvatar < matlab.System
                 % 顔検出器の初期化
                 if obj.FaceDetection && ...
                         exist('vision.CascadeObjectDetector','class')==8
-                    obj.fcd = vision.CascadeObjectDetector();
+                    %obj.fcd = vision.CascadeObjectDetector('antDetector.xml'); % アリ検出
+                    obj.fcd = vision.CascadeObjectDetector(); % 顔検出
                 end
             else
                 obj.FaceDetection = false;
@@ -109,10 +110,10 @@ classdef PiAvatar < matlab.System
             %
             if obj.ServoMotor
                 obj.att = 90;
-                obj.sva = 0;                
+                obj.sva = 0;
                 obj.srv.writePosition(obj.att);
             else
-                obj.rpi.system('sudo python /home/pi/servoclear.py');
+                %obj.rpi.system('sudo python /home/pi/servoclear.py');
             end
         end
         
@@ -146,11 +147,13 @@ classdef PiAvatar < matlab.System
                             img_ = rgb2hsv(img_);
                             img_(:,:,3) = histeq(img_(:,:,3));
                             img_ = hsv2rgb(img_);
-                        end                        
+                        end
                         if obj.FaceDetection % 顔検出
                             bboxes = obj.fcd.step(img_);
+                            sLabel = 'Face';
+                            %sLabel = 'Ant';                        
                             img_ = insertObjectAnnotation(img_, ...
-                                'rectangle', bboxes, 'Face');
+                                'rectangle', bboxes, sLabel);
                         end
                         obj.img = img_;
                     end
@@ -158,29 +161,30 @@ classdef PiAvatar < matlab.System
                     obj.axl = obj.l3dxyzread_() .* [ 1 -1 -1 ];
                 case 'Tilt Up'
                     if obj.ServoMotor
-                       obj.sva = obj.sva - 1;
-                       obj.srv.writePosition(obj.att+obj.sva);
+                        obj.sva = obj.sva - 1;
+                        obj.srv.writePosition(obj.att+obj.sva);
                     end
                 case 'Tilt Down'
                     if obj.ServoMotor
-                       obj.sva = obj.sva + 1;
-                       obj.srv.writePosition(obj.att+obj.sva);
+                        obj.sva = obj.sva + 1;
+                        obj.srv.writePosition(obj.att+obj.sva);
                     end
-              case 'Tilt Track'
+                case 'Tilt Track'
                     if obj.ServoMotor
-                       ang_ = obj.axl2ang_(obj.axl);
-                       obj.att = 0.5*obj.att + 0.5*ang_;
-                       disp(obj.att)
-                       %
-                       obj.srv.writePosition(obj.att);
-                    end                      
+                        ang_ = obj.axl2ang_(obj.axl);
+                        obj.att = 0.5*obj.att + 0.5*ang_;
+                        disp(obj.att)
+                        %
+                        obj.srv.writePosition(obj.att);
+                    end
                 case 'Tilt Reset'
                     if obj.ServoMotor
-                       ang_ = obj.axl2ang_(obj.axl);
-                       obj.att = ang_;
-                       %
-                       obj.srv.writePosition(obj.att);
-                    end                    
+                        ang_ = obj.axl2ang_(obj.axl);
+                        obj.att = ang_;
+                        obj.sva = 0;
+                        %
+                        obj.srv.writePosition(obj.att);
+                    end
                 otherwise
                     me = MException('PiAvatar:InvalidCommand',...
                         'Command "%s" is not supported.', command);
@@ -198,41 +202,41 @@ classdef PiAvatar < matlab.System
             obj.motor1_(1,0);
             obj.motor2_(1,0);
         end
-
+        
         function neutral_(obj) % ニュートラル
             obj.motor1_(0,0);
             obj.motor2_(0,0);
-        end	
+        end
         
         function reverse_(obj) % 後退
             obj.motor1_(0,1);
             obj.motor2_(0,1);
-        end	
+        end
         
         function turnRight_(obj) % 右旋回
             obj.motor1_(0,1);
             obj.motor2_(1,0);
-        end	
+        end
         
         function turnLeft_(obj) % 左旋回
             obj.motor1_(1,0);
             obj.motor2_(0,1);
-        end	
+        end
         
         function brake_(obj) % ブレーキ
             obj.motor1_(1,1);
             obj.motor2_(1,1);
-        end	
+        end
         
         function motor1_(obj,in1,in2) % DCモータ1
             obj.rpi.writeDigitalPin(obj.Motor1In1Pin, in1);
             obj.rpi.writeDigitalPin(obj.Motor1In2Pin, in2);
-        end	
+        end
         
         function motor2_(obj,in1,in2)  % DCモータ2
             obj.rpi.writeDigitalPin(obj.Motor2In1Pin, in1);
             obj.rpi.writeDigitalPin(obj.Motor2In2Pin, in2);
-        end	   
+        end
         
         function ledon_(obj,ledNumber)
             % LED 点灯
@@ -256,6 +260,7 @@ classdef PiAvatar < matlab.System
             adCtrlReg1 = hex2dec('20'); % CTRL_REG1
             diCtrlReg1 = hex2dec('7F');
             obj.l3d.writeRead([adCtrlReg1 diCtrlReg1]);
+            obj.axl = [ 0 1 0 ];
         end
         
         function axl = l3dxyzread_(obj)
@@ -295,7 +300,7 @@ classdef PiAvatar < matlab.System
             z_ = axl(3);
             ang = max(90,min(270,mod(atan2d(y_,z_)+90,360)))-90;
         end
-
+        
     end
     
 end
