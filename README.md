@@ -1,5 +1,2 @@
-# PiAvatar
+Welcome to PiAvatar
 
-## Hardware
-
-## Software
