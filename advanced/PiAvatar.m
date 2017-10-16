@@ -166,7 +166,8 @@ classdef PiAvatar < matlab.System
                        obj.sva = obj.sva + 1;
                        obj.srv.writePosition(obj.att+obj.sva);
                     end
-              case 'Tilt Track'
+                %{    
+                case 'Tilt Track'
                     if obj.ServoMotor
                        ang_ = obj.axl2ang_(obj.axl);
                        obj.att = 0.5*obj.att + 0.5*ang_;
@@ -180,7 +181,8 @@ classdef PiAvatar < matlab.System
                        obj.att = ang_;
                        %
                        obj.srv.writePosition(obj.att);
-                    end                    
+                    end
+                    %}
                 otherwise
                     me = MException('PiAvatar:InvalidCommand',...
                         'Command "%s" is not supported.', command);

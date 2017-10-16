@@ -132,8 +132,8 @@ if strcmp(handles.piState,'In process')
             end
         case 'q'
             handles.command = 'Tilt Up';
-        case 'a'
-            handles.command = 'Tilt Reset';
+        %case 'a'
+        %    handles.command = 'Tilt Reset';
         case 'z'
             handles.command = 'Tilt Down';
     end
