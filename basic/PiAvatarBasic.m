@@ -6,6 +6,7 @@ classdef PiAvatarBasic < matlab.System
         IpAddress      = ''
         Id             = 'pi'
         Password       = 'raspberry'
+        Pwm0Pin        = 18
         Motor1In1Pin   = 19
         Motor1In2Pin   = 20
         Motor2In1Pin   = 21
@@ -18,6 +19,7 @@ classdef PiAvatarBasic < matlab.System
         rpi
         cam
         img
+        srv
     end
     
     methods
@@ -33,6 +35,17 @@ classdef PiAvatarBasic < matlab.System
             obj.rpi.configurePin(obj.Motor2In2Pin, 'DigitalOutput');
             % PiCamera 初期化
             obj.cam = obj.rpi.cameraboard('Resolution',obj.Resolution);
+       
+            % サーボモータの設定
+            if verLessThan('matlab','9.1')  
+                obj.rpi.configurePin(obj.Pwm0Pin, 'DigitalOutput');
+                obj.rpi.writeDigitalPin(obj.Pwm0Pin, 0);
+                obj.srv = [];
+            else
+                obj.srv = obj.rpi.servo(obj.Pwm0Pin,...
+                    'MaxPulseDuration',2e-3,...
+                    'MinPulseDuration',7e-4);
+            end
         end
     end
     
@@ -40,6 +53,12 @@ classdef PiAvatarBasic < matlab.System
         
         function setupImpl(obj)
             obj.cam.ImageEffect    = obj.ImageEffect;
+            if verLessThan('matlab','9.1')              
+                obj.rpi.system('sudo python /home/pi/servoclear.py');                
+            else
+                att_ = 90;
+                obj.srv.writePosition(att_);
+            end
         end
         
         function stepImpl(obj,command)
