@@ -7,7 +7,7 @@ PiAvatar
 
 ## デモ
 
-## Requirement
+## 使用環境
 
 ## 使用法
 
