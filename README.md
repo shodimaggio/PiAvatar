@@ -11,7 +11,9 @@ PiAvatar
 
 ## 使用法
 
-## インストール
+## 準備
+
+- [PiAvatar Wiki](https://github.com/shodimaggio/PiAvatar/wiki)を参照
 
 ## ライセンス
 
