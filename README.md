@@ -21,6 +21,6 @@ PiAvatar
 
 ## 著者
 
-[shodimaggio](https://github.com/shodimaggio)
+- [shodimaggio](https://github.com/shodimaggio)
 
 
