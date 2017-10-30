@@ -35,7 +35,31 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 
 ## 説明
 
+本システムは，機体（ハードウェア）とアプリ（ソフトウェア）で構成されます。
+政策の目標は以下の通りです。
+
+- 機体（ハードウェア）
+-- バッテリー駆動，ワイヤレス通信
+-- モータで前後左右に移動できる
+-- カメラで画像を取得できる
+
+- アプリ（ソフトウェア）
+-- ホストPC上で動作
+-- 機体を通信制御できる
+-- 機体からの画像を表示できる
+
+詳しくは [PiAvatar Wiki](https://github.com/shodimaggio/PiAvatar/wiki)を参照してください。
+
+
 ## デモ
+
+最もシンプルなアプリは以下のスクリプトになります。MATLAB コマンドウィンドウ上から実行してください。
+
+- [basic/PiAvatarAppBasic.m](https://github.com/shodimaggio/PiAvatar/blob/master/basic/PiAvatarAppBasic.m)
+
+- advanced/PiAvatar.m
+
+- standalone/AutonomousControlDemo.slx
 
 ## 使用環境
 
@@ -43,7 +67,7 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 
 ## 準備
 
-- [PiAvatar Wiki](https://github.com/shodimaggio/PiAvatar/wiki)を参照
+詳しくは [PiAvatar Wiki](https://github.com/shodimaggio/PiAvatar/wiki)を参照してください。
 
 ## ライセンス
 
