@@ -1,3 +1,22 @@
+# Move this file to /usr/local/sbin
+#
+#   $ sudo cp ./rdsdctrl.py /usr/local/sbin
+#
+# Add the following lines to /etc/rc.local 
+# 
+#   sudo python /usr/local/sbin/rbsdctrl.py &
+#   exit 0
+#
+# How to shutdown
+#
+#   Keep pusshing the button over 3 seconds
+#
+# How to reboot
+#
+#   Just hit the button
+#
+#
+#
 import RPi.GPIO as GPIO
 import time
 import os
