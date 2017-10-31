@@ -38,18 +38,17 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 本システムは，機体（ハードウェア）とアプリ（ソフトウェア）で構成されます。
 政策の目標は以下の通りです。
 
-- 機体（ハードウェア）
--- バッテリー駆動，ワイヤレス通信
--- モータで前後左右に移動できる
--- カメラで画像を取得できる
+### 機体（ハードウェア）
+- バッテリー駆動，ワイヤレス通信
+- モータで前後左右に移動できる
+- カメラで画像を取得できる
 
-- アプリ（ソフトウェア）
--- ホストPC上で動作
--- 機体を通信制御できる
--- 機体からの画像を表示できる
+### アプリ（ソフトウェア）
+- ホストPC上で動作
+- 機体を通信制御できる
+- 機体からの画像を表示できる
 
 詳しくは [PiAvatar Wiki](https://github.com/shodimaggio/PiAvatar/wiki)を参照してください。
-
 
 ## デモ
 
@@ -57,11 +56,23 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 
 - [basic/PiAvatarAppBasic.m](https://github.com/shodimaggio/PiAvatar/blob/master/basic/PiAvatarAppBasic.m)
 
-- advanced/PiAvatar.m
+高機能なアプリは以下のスクリプトになります。MATLAB コマンドウィンドウ上から実行してください。
 
-- standalone/AutonomousControlDemo.slx
+- [advanced/PiAvatarApp.m](https://github.com/shodimaggio/PiAvatar/blob/master/advanced/PiAvatarApp.m)
+
+以下は自律制御のSimulink モデルになります。Simulink からハードウェアに展開をして利用してください。
+
+- [standalone/AutonomousControlDemo.slx](https://github.com/shodimaggio/PiAvatar/blob/master/standalone/AutonomousControlDemo.slx)
+
 
 ## 使用環境
+
+- MATLAB/Simulink R2017a (Windows 10)
+- 
+- Image Processing Toolbox
+- Computer Vision System Toolbox
+- Control System Toolbox
+
 
 ## 使用法
 
