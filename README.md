@@ -51,6 +51,7 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 高機能なアプリは以下のスクリプトになります。MATLAB コマンドウィンドウ上から実行してください。
 
 - [advanced/PiAvatarApp.m](https://github.com/shodimaggio/PiAvatar/blob/master/advanced/PiAvatarApp.m)
+- [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/Z6dpTMZAKxU/0.jpg)](https://youtu.be/Z6dpTMZAKxU)
 
 以下は自律制御のSimulink モデルになります。Simulink からハードウェアに展開をして利用してください。
 
