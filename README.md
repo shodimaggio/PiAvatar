@@ -54,10 +54,13 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 
 [![](http://img.youtube.com/vi/Z6dpTMZAKxU/0.jpg)](https://youtu.be/Z6dpTMZAKxU)
 
+[![](http://img.youtube.com/vi/-Je2dn9hNJU/0.jpg)](https://youtu.be/-Je2dn9hNJU)
+
 以下は自律制御のSimulink モデルになります。Simulink からハードウェアに展開をして利用してください。
 
 - [standalone/AutonomousControlDemo.slx](https://github.com/shodimaggio/PiAvatar/blob/master/standalone/AutonomousControlDemo.slx)
 
+[![](http://img.youtube.com/vi/E2TbdK0tUB0/0.jpg)](https://youtu.be/E2TbdK0tUB0)
 
 ## 使用環境
 
