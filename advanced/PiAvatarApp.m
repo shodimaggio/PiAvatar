@@ -75,6 +75,7 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+drawnow
 
 % UIWAIT makes PiAvatarApp wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -138,6 +139,7 @@ if strcmp(handles.piState,'In process')
             handles.command = 'Tilt Down';
     end
     guidata(hObject,handles);
+    drawnow
     
 end
 
@@ -152,6 +154,7 @@ function figure1_KeyReleaseFcn(hObject, eventdata, handles)
 if strcmp(handles.piState,'In process')
     handles.command = 'Neutral';
     guidata(hObject,handles);
+    drawnow
 end
 
 function editIpAddress_Callback(hObject, eventdata, handles)
@@ -243,6 +246,7 @@ end
 
 % Update handless
 guidata(hObject,handles)
+drawnow
 
 % --- Executes during object creation, after setting all properties.
 function popupmenuAvailableResolutions_CreateFcn(hObject, eventdata, handles)
@@ -345,6 +349,7 @@ try
     
     % Update handles
     guidata(hObject,handles)
+    drawnow
 catch ME
     % http://jp.mathworks.com/help/matlab/ref/dialog.html
     d = dialog('Position',[300 300 250 150],...
@@ -372,6 +377,7 @@ try
     %
     handles.piAvatar = [];
     guidata(hObject,handles)
+    drawnow
     %
     hObject.Enable                                = 'off';
     handles.pushbuttonConnect.Enable              = 'on';
@@ -402,6 +408,7 @@ try
     
     % Update handles
     guidata(hObject,handles)
+    drawnow
 catch ME
     % http://jp.mathworks.com/help/matlab/ref/dialog.html
     d = dialog('Position',[300 300 250 150],...
@@ -437,6 +444,7 @@ handles.axesImage.Children.CData = handles.piAvatar.img;
 
 % Update handles
 guidata(hObject,handles)
+drawnow
 
 % --- Executes during object creation, after setting all properties.
 function popupmenuAvailableImageEffects_CreateFcn(hObject, eventdata, handles)
@@ -471,6 +479,7 @@ handles.axesImage.Children.CData = handles.piAvatar.img;
 
 % Update handles
 guidata(hObject,handles)
+drawnow
 
 % --- Executes on button press in checkboxVerticalFlip.
 function checkboxVerticalFlip_Callback(hObject, eventdata, handles)
@@ -490,6 +499,7 @@ handles.axesImage.Children.CData = handles.piAvatar.img;
 
 % Update handles
 guidata(hObject,handles)
+drawnow
 
 % --- Executes on button press in pushbuttonStop.
 function pushbuttonStop_Callback(hObject, eventdata, handles)
@@ -507,6 +517,7 @@ handles.pushbuttonDisconnect.Enable           = 'on';
 %
 handles.piState = 'Ready';
 guidata(hObject,handles);
+drawnow
 %
 handles.textNoConnection.Enable               = 'off';
 handles.textReady.Enable                      = 'on';
@@ -537,6 +548,7 @@ handles.piAvatar.step('Led2Off')
 
 % Update handles
 guidata(hObject,handles)
+drawnow
 
 % --- Executes on button press in pushbuttonStart.
 function pushbuttonStart_Callback(hObject, eventdata, handles)
@@ -567,6 +579,7 @@ end
 
 % Update handles
 guidata(hObject,handles)
+drawnow
 
 % Control PiAvatar
 axes(handles.axesImage)
@@ -574,6 +587,7 @@ precommand = 'Neutral';
 handles.piAvatar.step('Neutral')
 while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
+    drawnow
     %
     curcommand = handles.command;
     try

@@ -24,12 +24,14 @@ handles.piState  = 'No connection'; % 状態初期化
 handles.command  = 'Neutral';       % コマンド初期化
 handles.output = hObject;
 guidata(hObject, handles);          % GUIオブジェクトの更新
+drawnow
 
-function varargout = PiAvatarApp_OutputFcn(hObject, ~, handles)
+function varargout = PiAvatarApp_OutputFcn(~, ~, handles)
 % GUI出力関数
 varargout{1} = handles.output;
 
 function pushbuttonConnect_Callback(hObject, ~, handles)
+%fprintf('pushbuttonConnect\n')
 % Connect ボタンのコールバック関数
 ipAddress        = handles.editIpAddress.String;
 handles.piAvatar = PiAvatarBasic('IpAddress',ipAddress);
@@ -44,8 +46,10 @@ end
 axes(handles.axesImage)       % 画像表示の初期化	       
 imshow(handles.piAvatar.img)
 guidata(hObject,handles);     % GUIオブジェクトの更新
+drawnow
 
 function figure1_KeyPressFcn(hObject, eventdata, handles)
+%fprintf('figure1_KeyPressFcn\n')
 % キー押下時のコールバック関数 
 if strcmp(handles.piState,'In process')
     switch(eventdata.Key)
@@ -61,6 +65,7 @@ if strcmp(handles.piState,'In process')
             handles.command = 'Brake';
     end
     guidata(hObject,handles); % GUIオブジェクトの更新
+    drawnow
 end
 
 function figure1_KeyReleaseFcn(hObject, ~, handles)
@@ -68,21 +73,25 @@ function figure1_KeyReleaseFcn(hObject, ~, handles)
 if strcmp(handles.piState,'In process')
     handles.command = 'Neutral';
     guidata(hObject,handles); % GUIオブジェクトの更新
+    drawnow
 end
 
 function pushbuttonStart_Callback(hObject, ~, handles)
+%fprintf('pushbuttonStart_Callback\n')
 % Start ボタンのコールバック関数
 handles.piState = 'In process';
 handles.pushbuttonStart.Enable       = 'off';
 handles.pushbuttonStop.Enable        = 'on';
 handles.pushbuttonDisconnect.Enable  = 'off';
 guidata(hObject,handles); % GUIオブジェクトの更新
+drawnow
 % PiAvatarの制御
 precommand = 'Neutral';
 handles.piAvatar.step('Neutral')
 while(strcmp(handles.piState,'In process'))
     handles = guidata(hObject);
-    curcommand = handles.command;
+    drawnow
+    curcommand = handles.command
     if strcmp(curcommand,precommand)
         handles.piAvatar.step('Snapshot')
     else
@@ -95,6 +104,7 @@ while(strcmp(handles.piState,'In process'))
 end
 
 function pushbuttonStop_Callback(hObject, ~, handles)
+%fprintf('pushbuttonStop\n')
 % Stop ボタンのコールバック関数
 handles.piState = 'Ready';
 handles.command = 'Neutral';
@@ -102,8 +112,10 @@ handles.pushbuttonStop.Enable       = 'off';
 handles.pushbuttonStart.Enable      = 'on';
 handles.pushbuttonDisconnect.Enable = 'on';
 guidata(hObject,handles); % GUIオブジェクトの更新
+drawnow
 
 function pushbuttonDisconnect_Callback(hObject, ~, handles)
+%fprintf('pushbuttonDisconnect\n')
 % Disconnect ボタンのコールバック関数
 handles.piAvatar = [];
 handles.piState = 'No connection';
@@ -111,13 +123,23 @@ handles.pushbuttonDisconnect.Enable = 'off';
 handles.pushbuttonConnect.Enable    = 'on';
 handles.pushbuttonStart.Enable      = 'off';
 guidata(hObject,handles); % GUIオブジェクトの更新
+drawnow
 
-function editIpAddress_Callback(hObject, ~, handles)
+function editIpAddress_Callback(~, ~, ~)
 % IpAddressテキスト入力のコールバック関数
 
-function editIpAddress_CreateFcn(hObject, ~, handles)
+function editIpAddress_CreateFcn(hObject, ~, ~)
 % IpAddressテキスト入力の生成関数
 if ispc && isequal(get(hObject,'BackgroundColor'), ...
 		   get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over pushbuttonStart.
+function pushbuttonStart_ButtonDownFcn(hObject, eventdata, handles)
+%fprintf('pushbuttonStart_ButtonDownFcn\n')
+% hObject    handle to pushbuttonStart (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

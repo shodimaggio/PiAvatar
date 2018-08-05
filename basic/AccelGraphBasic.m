@@ -70,5 +70,10 @@ classdef AccelGraphBasic < matlab.System
             obj.sch.YData(obj.Count) = data(2);
             obj.sch.ZData(obj.Count) = data(3);
         end
+        
+        function resetImpl(obj)
+            obj.Count = 1;
+        end
+        
     end
 end
