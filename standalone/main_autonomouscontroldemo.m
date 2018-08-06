@@ -1,16 +1,19 @@
 %%
-rpi = raspberrypi('192.168.179.7');
+rpi = raspberrypi('192.168.38.54');
 disp(rpi)
 
 %%
 rpi.runModel('AutonomousControlDemo')
 
 %%
-rpi.stopModel('AutonomousControlDemo')
+if rpi.isModelRunning('AutonomousControlDemo')
+    rpi.stopModel('AutonomousControlDemo')
+else
+    fprintf('Model is not running\n')
+end
 
 %%
 rpi.runModel('PwmClear')
-
 %%
 clear rpi
 

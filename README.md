@@ -66,7 +66,7 @@ PiAvatar を製作すればいろいろな楽しみ方ができます。PiAvatar
 
 PiAvatarBasicApp/PiAvatarApp
 
-- MATLAB/Simulink R2017a (Windows 10)
+- MATLAB/Simulink R2018a (Windows 10)
 - MATLAB support package for Raspberry Pi Hardware
 - Image Processing Toolbox
 - Computer Vision System Toolbox
