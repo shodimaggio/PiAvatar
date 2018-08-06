@@ -7,6 +7,10 @@
 #   sudo python /usr/local/sbin/rbsdctrl.py &
 #   exit 0
 #
+# Or set crontab 
+#
+#   echo '@reboot sudo python /usr/local/sbin/rbsdctrl.py &' | crontab
+#
 # How to shutdown
 #
 #   Keep pusshing the button over 3 seconds
