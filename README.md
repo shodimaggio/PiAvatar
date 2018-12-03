@@ -7,7 +7,7 @@ PiAvatar
 
 ### 千里眼の能力を与えてくれる小型ロボット
 
-Raspberry Pi Zero （以下、Pi Zero）ベースの安価（1 万2 千円程度）な小型ロボットPiAvatarを製しました。
+Raspberry Pi Zero （以下、Pi Zero）ベースの安価（1 万2 千円程度）な小型ロボットPiAvatarを制作しました。
 PiAvatar は、Pi Zero とRaspberry Pi Camera モジュール（以下、Pi Camera）を利用した私たちの分身（Avatar）です。モータを備え、移動できます。バッテリを搭載し、無線通信ができます。私たちはこの分身を使って離れた場所の様子を知ることができます！今回、PiAvatar の制御プログラムにはMATLAB を利用しました。Raspberry Pi でプログラミングといえばPython が定番ですが、MATLAB を選択した理由を以下にまとめます。
 
 - 商用製品のためサポート、ドキュメントが充実
